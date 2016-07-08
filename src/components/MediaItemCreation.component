@@ -1,0 +1,71 @@
+<apex:component controller="MediaItemCreateComponentController" allowDML="true">
+    <apex:attribute type="Boolean" description="Indicates if the component is being referenced from a Product." name="isProduct" assignTo="{!isAProduct}" /> 
+    <apex:attribute type="Boolean" description="Indicates if the component is being referenced from a Project." name="isProject" assignTo="{!isAProject}" />
+    <apex:attribute type="Boolean" description="Indicates if the component is being referenced from a competitor project" name="isCompProj" assignTo="{!isACompProject}"/>
+    <apex:attribute type="Boolean" description="Indicates if the component is being referenced from a suburb" name="isSuburb" assignTo="{!isASuburb}" /> 
+
+    <apex:attribute type="ApexPages.StandardSetController" description="The set controller for the object" name="stdSetController" assignTo="{!stdSetCont}" /> 
+    <apex:attribute type="ApexPages.StandardController" description="The standard controller for the object" name="stdController" assignTo="{!stdCont}" /> 
+
+    <apex:form > 
+    	<apex:outputPanel id="page"> 
+	        <apex:pageBlock title="Media Item Creation" mode="edit" rendered="{!!displayUpload}"> 
+	            <apex:outputPanel id="errMsg"> 
+	                <apex:pageMessages /> 
+	            </apex:outputPanel>
+
+	            <apex:pageBlockSection title="Create Media Items For:" columns="1" collapsible="true" rendered="{!!errMsgPresent}"> 
+	            	<apex:pageBlockSectionItem > 
+		                <apex:outputLabel value="Record Names: "/> 
+		                <apex:outputText value="" /> 
+	                </apex:pageBlockSectionItem>
+	                <apex:repeat var="theItemName" value="{!recordNames}" > 
+	                    <apex:pageBlockSectionItem > 
+	                        <apex:outputLabel value="" />   
+		                    <apex:outputText value="{!theItemName}" /> 
+	                    </apex:pageBlockSectionItem>
+	                </apex:repeat> 
+	            </apex:pageBlockSection> 
+
+	            <apex:pageBlockSection title="Media Item Details" rendered="{!!errMsgPresent}" columns="1"> 
+	            	<apex:pageBlockSectionItem >
+	            		<apex:outputLabel value="Name" />  
+		            	<apex:outputPanel > 
+			            	<div class="requiredInput">
+			                	<div class="requiredBlock"></div>
+			                	<apex:inputText value="{!mediaItemDetails.Name}" /> 
+			               	</div>
+		               	</apex:outputPanel>
+	               	</apex:pageBlockSectionItem>
+	               	<apex:pageBlockSectionItem >
+		               	<apex:outputLabel value="Description" /> 
+		               	<apex:outputPanel > 
+			               	<div class="requiredInput">
+			                	<div class="requiredBlock"></div>
+			                	<apex:inputTextarea label="Description" value="{!mediaItemDetails.Description__c}" rows="6" cols="150"/> 
+			                </div>
+		                </apex:outputPanel>
+	                </apex:pageBlockSectionItem>
+	                <apex:inputField value="{!mediaItemDetails.File_Category__c}" /> 
+	                <apex:inputField value="{!mediaItemDetails.File_Type__c}" />  
+	                <apex:inputField value="{!mediaItemDetails.Hero__c}" />  
+	                
+	            </apex:pageBlockSection>
+	            <apex:pageBlockButtons > 
+	                <apex:commandButton value="Next" action="{!Next}" rendered="{!!errMsgPresent}" reRender="page"/> 
+	                <apex:commandButton value="Cancel" action="{!Cancel}" /> 
+	            </apex:pageBlockButtons>
+	        </apex:pageBlock>
+
+	        <apex:pageBlock title="Media Item Upload" mode="edit" rendered="{!displayUpload}"> 
+	            <apex:outputPanel id="errMsg"> 
+	            <apex:pageMessages /> 
+	            </apex:outputPanel>
+	            <apex:iframe title="Upload Media Items"  src="https://www-new-staging.oliverhume.com.au/fileupload?id={!mediaItemIds}" height="500" width="600px"/>
+	           	<apex:pageBlockButtons > 
+	            	<apex:commandButton value="Done" reRender="errMsg" action="{!Cancel}"/> 
+	            </apex:pageBlockButtons>
+	        </apex:pageBlock>
+        </apex:outputPanel>
+    </apex:form>    
+</apex:component>

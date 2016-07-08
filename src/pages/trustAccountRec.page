@@ -1,0 +1,1131 @@
+<apex:page standardController="Trust_Account__c" extensions="trustAccountRec">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"/> 
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.12.0/jquery.validate.min.js"></script>
+    
+    <script>
+        function setFocusOnLoad() {}
+        var j$ = jQuery.noConflict();
+        j$(document).ready(function(){
+            //Change the date to yesterday
+            replaceDate();
+            //format the tabs
+            j$('.tabPanel').tabs({
+                beforeActivate: function( event, ui ) {
+                    var tabName = ui.newTab.text();
+                    var previousTab = ui.oldTab.text();
+                    var validated = true;
+                    //first validate the page we are trying to leave
+                    if(previousTab == 'Receipts'){
+                        //client side field validation
+                        validated =  validateTransactions();
+                    }
+                    if(previousTab == 'Payments'){
+                        //client side field validation
+                        validated = validateTransactions();
+                    }
+                    if(validated){
+                        if(tabName == 'Adjustments'){
+                            goModal();
+                            refreshAdjustments();
+                        }
+                        if(tabName == 'Unpresented Payments'){
+                            goModal();
+                            refreshUnpresentedPayments();
+                        }
+                        if(tabName == 'Unreconciled Adjustments'){
+                            goModal();
+                            refreshUnresolvedAdjustments();
+                        }
+                    }
+                    return validated;
+                }
+            
+            });
+    
+        });
+        
+        function validateTransactions(){
+            //goModal();
+            //function is called when leaving the Receipts page to ensure all the details are filled in accordingly
+            //for each row in the receipts section that needs validating, loop through and ensure that the correct fields are filled in.
+            //by default we will assume the page is valid.
+            var isValid = true;
+            //remove any existing errors from the page.
+            resetErrors();
+            j$( "#receipts, #payments" ).find(".validate").each(function( index ) {
+                console.log('looping through');
+                console.log('Is Transaction Selected? '+j$(this).prop('checked'));
+                if(j$(this).prop('checked')){
+                    //the checkbox is checked, so validate the row.
+                    //get the rowVal class name
+                    var rowVal = j$(this).attr('rowVal');
+                    console.log('rowVal:'+rowVal);
+                    //retrieve every other element with the same value and ensure it has a value
+                    var transactionIsNull = false;
+                    var opportunityIsNull = false;
+                    j$("[rowVal="+rowVal+"]").each(function( index ) {
+                        //remove any pre existing errors.
+                        //j$(this).parent().children('.err').remove();
+                        console.log('Col Found: '+j$(this).val());
+                        //doesn''t have the onclick attribute so is a valid input.  Only process no dependent fields.
+                        if(j$(this).val() == '' && !j$(this).is('[onclick]')){
+                            if(!j$(this).hasClass('opportunity') && !j$(this).hasClass('transaction')){
+                                //there isn't a value'
+                                isValid = false;
+                                //get the error text from the element, if not load default.
+                                var msg = 'Please enter a value';
+                                if(j$(this).attr('msg')){
+                                    msg = j$(this).attr('msg');         
+                                }
+                                //append the msg to the element
+                                //j$(this).after('<div style="color:red;">'+msg+'</div>');
+                                //check that there isn''t already an error showing
+                                //j$(this).parent().children('.err').remove();
+                                j$(this).parent().append('<div style="color:red;" class="err">'+msg+'</div>');
+                            }                        
+                        
+                            if(j$(this).hasClass('transaction')){
+                                transactionIsNull = true;
+                                $xn = j$(this);
+                            }
+                            if(j$(this).hasClass('opportunity')){
+                                opportunityIsNull = true;
+                                $oppty = j$(this);
+                            }
+                        
+                        }
+                    });
+                    //the loop has finished check that the oppty/xn fields are populated correctly.
+                    if(transactionIsNull && opportunityIsNull){
+                        //Can't both be null, add an error'
+                        isValid = false;
+                        var msg = 'Please enter aa value';
+                        if($xn.attr('msg')){
+                           msg = j$(this).attr('msg');                            
+                        }
+                        $xn.parent().children('.err').remove();
+                        $xn.parent().append('<div style="color:red;" class="err">'+msg+'</div>');
+                        msg = 'Please enter aa value';
+                        if($oppty.attr('msg')){
+                           msg = j$(this).attr('msg');                            
+                        }
+                        $oppty.parent().children('.err').remove();
+                        $oppty.parent().append('<div style="color:red;" class="err">'+msg+'</div>');
+                    
+                    }
+                }
+            });
+            
+            //show the page error if there are some errors
+            if(!isValid){
+                j$('.tabPanel').prepend($error);
+                //hide modal incase it''s active.
+                noModal();
+            }
+            
+            console.log('Transaction Validated');
+            return isValid;
+        }
+        
+        function validatePayments(){
+        
+            //testing
+            return true;
+        }
+        
+        function resetErrors(){
+            //remove any existing errors on the page.
+            j$('div.err').remove();
+            j$('.validateError').remove();
+        
+        }
+        
+        var $error = j$('<div class="message errorM2 validateError" role="alert"> <table border="0" cellpadding="0" cellspacing="0" class="messageTable" style="padding:0px;margin:0px;"> <tbody><tr valign="top"> <td> <img alt="ERROR" class="msgIcon" src="/s.gif" title="ERROR"> </td> <td class="messageCell"><div class="messageText"><span style="color:#cc0000"> <h4>Required Values Missing</h4></span>Please check you have supplied values for all selected transactions/adjustments<br></div></td></tr><tr> <td></td> <td> </td> </tr></tbody></table></div>');
+        
+        function replaceDate(){
+            j$(bankDate).next().hide();
+            j$('<span class="dateFormat">[&nbsp;<a href="javascript:setMinus1();">Yesterday</a>&nbsp;]</span>').insertAfter(j$(bankDate));
+    
+        }
+    
+        function setMinus1(){
+            
+            //try and get the reservation date.
+            var newDate;
+            var minus1;
+            
+            newDate = new Date();
+            minus1 = new Date();
+            minus1.setDate(newDate.getDate()-1);
+                        
+            var d = minus1.getDate().toString();
+            var m = (minus1.getMonth()+1).toString();
+            var y = minus1.getFullYear().toString();
+            
+            //make sure the days and months are to digits long
+            if(d.length == 1){
+                d = '0'+d;
+            }
+            if(m.length == 1){
+                m = '0'+m;
+            }
+            
+            j$(bankDate).val(d + '/' + m + '/' + y);
+        }
+        
+        function goModal(){
+            //trigger the modal loading element
+            //alert('ingomodal');
+            j$( "#dialog-modal" ).dialog({
+                  height: 140,
+                  modal: true,
+                  draggable: false,
+                  resizable: false,
+                  dialogClass: "onTop",
+                  open: function( event, ui ) {
+                      j$( "#progressbar" ).progressbar({
+                    value: false
+                    });
+                  }
+            }).parent().css({'background': 'none', 'border': 'none'});
+            //also remove the modal header
+            j$('.ui-dialog-titlebar').css('visibility', 'hidden');
+        
+        }
+        function noModal(){
+            j$('.ui-widget-overlay').fadeTo(0, 0.8);
+            j$( "#dialog-modal" ).dialog( "close" );
+        }
+        
+        function processTransactions(){
+            noModal();
+            //get the varianceBalance from the page.
+            var varString = j$('.varianceBalance').text();
+            var varBal = Number(varString.replace(/[^0-9\.]+/g,""));
+            console.log('Variance Balance is: '+varBal);
+            
+            if(varBal != 0){
+                //alert the user to the balance not being 0
+                if(confirm('Variance Balance is $'+varBal+' do you wish to continue?')){
+                    commitTransactions();
+                }
+                else{
+                    //do nothing!
+                }
+            }
+            else{
+                //allow to continue.
+                commitTransactions();
+            }
+        }
+    </script>
+    
+    <style>
+        body, html{
+            height:100%;
+        }
+        .helpOrb{
+            display:none;
+        }
+
+        .xContainer{
+
+            padding:0 5px 5px 5px;
+        }
+        .xHeader td{
+             background-color:#aa47ba; 
+             padding:5px 5px 5px 5px;
+             font-weight:bold;
+        }
+        .groupTransactions{
+            border: 1px solid;
+            min-height:30px;
+            margin-left:10%;
+            margin-right:20%;
+            margin-top:20px;
+            margin-bottom:20px;
+            padding:30px;
+        }
+        .transactionHeader{
+            font-weight:bold;
+            margin-bottom:20px;
+        }
+        .noHeader{
+            /*
+            display:none;
+            */
+        }
+        .noShowDate .dateFormat{
+            display:none;
+        }
+        .ui-widget-overlay{
+            background: #aaaaaa 50% 50% repeat-x;
+            opacity: .3;
+        }
+        .validateButton {
+            -moz-box-shadow:inset 0px 1px 0px 0px #cae3fc;
+            -webkit-box-shadow:inset 0px 1px 0px 0px #cae3fc;
+            box-shadow:inset 0px 1px 0px 0px #cae3fc;
+            background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #79bbff), color-stop(1, #4197ee) );
+            background:-moz-linear-gradient( center top, #79bbff 5%, #4197ee 100% );
+            filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#79bbff', endColorstr='#4197ee');
+            background-color:#79bbff;
+            -webkit-border-top-left-radius:0px;
+            -moz-border-radius-topleft:0px;
+            border-top-left-radius:0px;
+            -webkit-border-top-right-radius:0px;
+            -moz-border-radius-topright:0px;
+            border-top-right-radius:0px;
+            -webkit-border-bottom-right-radius:0px;
+            -moz-border-radius-bottomright:0px;
+            border-bottom-right-radius:0px;
+            -webkit-border-bottom-left-radius:0px;
+            -moz-border-radius-bottomleft:0px;
+            border-bottom-left-radius:0px;
+            text-indent:0;
+            border:1px solid #469df5;
+            display:inline-block;
+            color:#ffffff;
+            font-family:Arial;
+            font-size:15px;
+            font-weight:bold;
+            font-style:normal;
+            height:40px;
+            line-height:40px;
+            width:100px;
+            text-decoration:none;
+            text-align:center;
+            text-shadow:1px 1px 0px #287ace;
+        }
+        .validateButton:hover {
+            background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #4197ee), color-stop(1, #79bbff) );
+            background:-moz-linear-gradient( center top, #4197ee 5%, #79bbff 100% );
+            filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#4197ee', endColorstr='#79bbff');
+            background-color:#4197ee;
+        }.validateButton:active {
+            position:relative;
+            top:1px;
+        }
+    </style>
+    <apex:form >
+		<apex:outputPanel id="messagePanel">
+			<apex:pageMessages escape="false" />
+		</apex:outputPanel>
+		<apex:pageBlock title="Bank Reconciliation: {!trustAccount.Name}">
+			<apex:pageBlockSection title="Step 1 - Select trust Account" columns="1">
+				<apex:pageBlockSectionItem >
+					<apex:outputPanel >Trust Account</apex:outputPanel>
+					<apex:selectList value="{!trustAccountId}" size="1">
+						<apex:actionSupport event="onchange" action="{!refreshTrustAccount}"/>
+						<apex:selectOptions value="{!trustAccountOptions}"></apex:selectOptions>
+					</apex:selectList>
+				</apex:pageBlockSectionItem>
+			</apex:pageBlockSection>
+			<apex:outputPanel id="recPanel">
+				<apex:outputPanel rendered="{!trustAccountId != null}">
+					<apex:pageBlockSection title="Step 2 - Upload CSV File" columns="1">
+						<apex:pageBlockSectionItem >
+							<apex:outputLabel >File</apex:outputLabel>
+							<apex:inputFile value="{!csvFile.body}" contentType="{!csvFile.ContentType}" fileName="{!csvFile.Name}" accept=".csv"></apex:inputFile>
+						</apex:pageBlockSectionItem>
+						<apex:pageBlockSectionItem >
+							<apex:outputLabel ></apex:outputLabel>
+							<apex:commandButton value="Upload" action="{!processCSV}"/>
+						</apex:pageBlockSectionItem>
+						<apex:outputText rendered="{!showCsvStatus}">This CSV Contains a total of {!csvRows} rows that will be processed</apex:outputText>
+					</apex:pageBlockSection>
+					<apex:pageBlockSection title="Step 3 - Bank Reconciliation Info">
+						<apex:inputField value="{!dummyReceipt.Date__c}" id="bankDate"/>
+						<script type="text/javascript"> var bankDate = document.getElementById('{!$Component.bankDate}');</script>
+						<apex:inputField value="{!dummyReceipt.Amount__c}"/>
+					</apex:pageBlockSection>
+					<apex:actionRegion >
+						<apex:pageBlockSection title="Step 4 - Review & Match" columns="1" id="recRegion" rendered="{!showStep4}">
+							<apex:outputPanel styleClass="tabPanel" layout="block">
+								<!--Refresh Action Functions-->
+								<apex:actionFunction name="refreshAdjustments" reRender="adjustmentPanel, messagePanel" oncomplete="console.log('Completed!'); noModal();" action="{!refreshAdjustments}"/>
+								<apex:actionFunction name="refreshUnpresentedPayments" reRender="paymentPanel, messagePanel" oncomplete="console.log('Completed!'); noModal();" action="{!refreshPayments}"/>
+								<apex:actionFunction name="refreshUnresolvedAdjustments" reRender="unresolvedAdjustmentPanel, messagePanel" oncomplete="console.log('Completed!'); noModal();" action="{!refreshUnresolvedAdjustments}"/>
+								<ul>
+									<li><a href="#receipts">Receipts</a></li>
+									<li><a href="#payments">Payments</a></li>
+									<li><a href="#adjustments">Adjustments</a></li>
+									<li><a href="#uPayments">Unpresented Payments</a></li>
+									<li><a href="#uAdjustments">Unreconciled Adjustments</a></li>
+								</ul>
+								<div id="receipts">
+									<apex:repeat value="{!receipts}" var="r">
+										<apex:pageMessage escape="false" severity="{!r.errorType}" rendered="{!r.isError}" strength="3" summary="{!r.errorMessage}"> </apex:pageMessage>
+											<apex:outputPanel layout="block" styleClass="xBlock">
+												<table style="width:100%; text-align:left;">
+													<tr class="xHeader">
+														<!-- Header Row-->
+														<td>Reconciled:</td>
+														<td>Bank Account:</td>
+														<td>Date:</td>
+														<td width="200px">Payment Type:</td>
+														<td>Cheque Number:</td>
+														<td width="300px">Description:</td>
+														<td>Amount:</td>
+													</tr>
+													<apex:repeat value="{!r.xRows}" var="x">
+														<tr>
+															<td>
+																<apex:inputCheckbox value="{!r.isReconciled}"/>
+															</td>
+															<td>{!x.xAccount}</td>
+															<td>
+																<apex:outputText value="{0,date,dd'/'MM'/'yyyy}">
+																	<apex:param value="{!x.xDate}" />
+																</apex:outputText>
+															</td>
+															<td>{!x.xCodeDesc}</td>
+															<td>{!x.xChequeNumber}</td>
+															<td>{!x.xDescription}</td>
+															<td>
+																<apex:outputText value="{0,number,$#,###.##}">
+																	<apex:param value="{!x.xAmount}" />
+																</apex:outputText>
+															</td>
+														</tr>
+													</apex:repeat>
+												</table>
+												<!-- List of Matched Receipts -->
+												<apex:outputPanel layout="block" style="padding-left:10px; padding-right:10px; padding-bottom:20px; padding-top:10px;">
+													<apex:outputPanel style="font-weight:bold;" >Potential Receipt Matches</apex:outputPanel>
+													<apex:outputPanel rendered="{!r.showMatchedReceipts}">
+														<table style="width:100%; text-align:left;" class="list" border="0" cellspacing="0" cellpadding="0">
+															<thead class="">
+																<tr class="headerRow">
+																	<!-- Header Row-->
+																	<th class="headerRow" scope="col">
+																		<div>Match:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Score:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Date:</div>
+																	</th>
+																	<th class="headerRow" scope="col" width="200px">
+																		<div>Opportunity:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Receipt:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Product:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Project:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Amount:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Payment Method:</div>
+																	</th>
+																</tr>
+															</thead>
+															<apex:repeat value="{!r.receipts}" var="mr">
+																<tr>
+																	<td>
+																		<apex:inputCheckbox value="{!mr.isSelected}"/>
+																	</td>
+																	<td>{!mr.score}%</td>
+																	<td>
+																		<apex:outputText value="{0,date,dd'/'MM'/'yyyy}">
+																			<apex:param value="{!mr.receipt.Date__c}" />
+																		</apex:outputText>
+																	</td>
+																	<td>{!mr.receipt.Opportunity__r.Name}</td>
+																	<td>{!mr.receipt.Description__c}</td>
+																	<td>{!mr.receipt.Product__r.Name}</td>
+																	<td>{!mr.receipt.Project__c}</td>
+																	<td>
+																		<apex:outputText value="{0,number,$#,###.##}">
+																			<apex:param value="{!mr.receipt.Amount__c}" />
+																		</apex:outputText>
+																	</td>
+																	<td>{!mr.receipt.Payment_Method__c}</td>
+																</tr>
+															</apex:repeat>
+														</table>
+													</apex:outputPanel>
+													<!-- another page block table for adding a receipt that is not matched-->
+													<apex:outputPanel id="manualReceiptTable">
+														<table style="width:100%; text-align:left;" class="list" border="0" cellspacing="0" cellpadding="0">
+															<thead class="">
+																<tr class="headerRow">
+																	<!-- Header Row-->
+																	<th class="headerRow" scope="col">
+																		<div>Match Existing:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Date:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Opportunity:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Receipt:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Product:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Project:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Amount:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Payment Method:</div>
+																	</th>
+																</tr>
+															</thead>
+															<apex:repeat value="{!r.newReceipts}" var="nr">
+																<tr>
+																	<td>
+																		<apex:inputCheckbox value="{!nr.isSelected}" styleClass="validate" html-rowVal="{!nr.receiptClass}"/>
+																	</td>
+																	<td class="noShowDate">
+																		<apex:inputField value="{!nr.receipt.Date__c}" html-rowVal="{!nr.receiptClass}" html-msg="Field Required"/>
+																	</td>
+																	<td>
+																		<apex:inputField value="{!nr.dummyAdjustment.Opportunity__c}" html-rowVal="{!nr.receiptClass}" styleClass="opportunity"/>
+																	</td>
+																	<td>
+																		<apex:inputField value="{!nr.dummyAdjustment.Transaction__c}" html-rowVal="{!nr.receiptClass}" styleClass="transaction">
+																			<apex:actionSupport onsubmit="goModal();" event="onchange" action="{!nr.updateAmount}" reRender="manualReceiptTable, messagePanel" oncomplete="noModal();"/>
+																		</apex:inputField>
+																	</td>
+																	<td>
+																		<apex:outputField value="{!nr.receipt.Product__r.Name}" />
+																	</td>
+																	<td>
+																		<apex:outputField value="{!nr.receipt.Project__c}" />
+																	</td>
+																	<td>
+																		<apex:inputField value="{!nr.receipt.Amount__c}" html-rowVal="{!nr.receiptClass}"/>
+																	</td>
+																	<td>
+																		<apex:inputField value="{!nr.receipt.Payment_Method__c}" html-rowVal="{!nr.receiptClass}"/>
+																	</td>
+																</tr>
+															</apex:repeat>
+														</table>
+													</apex:outputPanel>
+													<apex:commandButton value="+" alt="Add Row" action="{!r.newManualReceipt}" onclick="goModal();" reRender="manualReceiptTable" oncomplete="noModal();"/>
+													<!-- Table for Matched Adjustments-->
+													<apex:outputPanel layout="block" style="padding-top:15px;"><b>Potential Adjustment Matches</b></apex:outputPanel>
+													<apex:outputPanel rendered="{!r.showMatchedAdjustments}">
+														<table style="width:100%; text-align:left;" class="list" border="0" cellspacing="0" cellpadding="0">
+															<thead class="">
+																<tr class="headerRow">
+																	<!-- Header Row-->
+																	<th class="headerRow" scope="col">
+																		<div>Match:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Score:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Date:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Adjustment:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Amount:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Notes:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Type:</div>
+																	</th>
+																</tr>
+															</thead>
+															<apex:repeat value="{!r.adjustments}" var="ma">
+																<tr>
+																	<td>
+																		<apex:inputCheckbox value="{!ma.isSelected}" styleClass="validate" html-rowVal="{!ma.adjustmentClass}"/>
+																	</td>
+																	<td>{!ma.score}%</td>
+																	<td>
+																		<apex:outputText value="{0,date,dd'/'MM'/'yyyy}">
+																			<apex:param value="{!ma.adjustment.Date__c}" />
+																		</apex:outputText>
+																	</td>
+																	<td>{!ma.adjustment.Name}</td>
+																	<td>
+																		<apex:outputText value="{0,number,$#,###.##}">
+																			<apex:param value="{!ma.adjustment.Amount__c}" />
+																		</apex:outputText>
+																	</td>
+																	<td>{!ma.adjustment.Notes__c}</td>
+																	<td>{!ma.adjustment.Type__c}</td>
+																</tr>
+															</apex:repeat>
+														</table>
+													</apex:outputPanel>
+													<!-- Table for attaching an existing adjustment that wasn't matched-->
+													<apex:outputPanel >
+														<table style="width:100%; text-align:left;" class="list" border="0" cellspacing="0" cellpadding="0" id="receiptAdjustmentTable">
+															<thead class="">
+																<tr class="headerRow">
+																	<!-- Header Row-->
+																	<th class="headerRow" scope="col">
+																		<div>Match Existing:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div></div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Adjustment:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div></div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div></div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div></div>
+																	</th>
+																</tr>
+															</thead>
+															<apex:repeat value="{!r.existingAdjustments}" var="ea">
+																<tr>
+																	<td>
+																		<apex:inputCheckbox value="{!ea.isSelected}" styleClass="validate" html-rowVal="{!ea.adjustmentClass}"/>
+																	</td>
+																	<td>{!ea.exAdj.Date__c}</td>
+																	<td>
+																		<apex:inputField value="{!ea.adjustment.Adjustment__c}" html-rowVal="{!ea.adjustmentClass}">
+																			<apex:actionSupport onsubmit="goModal();" event="onchange" action="{!ea.loadExisting}" reRender="receiptAdjustmentTable" oncomplete="noModal();"/>
+																		</apex:inputField>
+																	</td>
+																	<td>{!ea.exAdj.Amount__c}</td>
+																	<td>{!ea.exAdj.Notes__c}</td>
+																	<td>{!ea.exAdj.Type__c}</td>
+																</tr>
+															</apex:repeat>
+														</table>
+													</apex:outputPanel>
+													<!-- Table for adjustment info -->
+													<apex:outputPanel >
+														<table style="width:100%; text-align:left;" class="list" border="0" cellspacing="0" cellpadding="0">
+															<thead class="">
+																<tr class="headerRow">
+																	<!-- Header Row-->
+																	<th class="headerRow" scope="col">
+																		<div>Create Adjustment</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Date:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Amount:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Notes:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Type:</div>
+																	</th>
+																</tr>
+															</thead>
+															<apex:repeat value="{!r.newAdjustments}" var="na">
+																<tr>
+																	<td>
+																		<apex:inputCheckbox value="{!na.isSelected}" styleClass="validate" html-rowVal="{!na.adjustmentClass}"/>
+																	</td>
+																	<td class="noShowDate">
+																		<apex:inputField value="{!na.adjustment.Date__c}" html-rowVal="{!na.adjustmentClass}"/>
+																	</td>
+																	<td>
+																		<apex:inputField value="{!na.adjustment.Amount__c}" html-rowVal="{!na.adjustmentClass}"/>
+																	</td>
+																	<td>
+																		<apex:inputText value="{!na.adjustment.Notes__c}" html-rowVal="{!na.adjustmentClass}"/>
+																	</td>
+																	<td>
+																		<apex:inputField value="{!na.adjustment.Type__c}" html-rowVal="{!na.adjustmentClass}"/>
+																	</td>
+																</tr>
+															</apex:repeat>
+														</table>
+													</apex:outputPanel>
+												</apex:outputPanel>
+											</apex:outputPanel>
+									</apex:repeat>
+								</div>
+								<div id="payments">
+									<apex:repeat value="{!payments}" var="p">
+										<apex:pageMessage severity="{!p.errorType}" rendered="{!p.isError}" strength="3" summary="{!p.errorMessage}"> </apex:pageMessage>
+										<apex:repeat value="{!p.xRows}">
+											<apex:outputPanel layout="block" styleClass="xBlock">
+												<table style="width:100%; text-align:left;">
+													<tr class="xHeader">
+														<!-- Header Row-->
+														<td>Reconciled:</td>
+														<td>Bank Account:</td>
+														<td>Date:</td>
+														<td width="200px">Payment Type:</td>
+														<td>Cheque Number:</td>
+														<td width="300px">Description:</td>
+														<td>Amount:</td>
+													</tr>
+													<apex:repeat value="{!p.xRows}" var="x">
+														<tr>
+															<td>
+																<apex:inputCheckbox value="{!p.isReconciled}"/>
+															</td>
+															<td>{!x.xAccount}</td>
+															<td>
+																<apex:outputText value="{0,date,dd'/'MM'/'yyyy}">
+																	<apex:param value="{!x.xDate}" />
+																</apex:outputText>
+															</td>
+															<td>{!x.xCodeDesc}</td>
+															<td>{!x.xChequeNumber}</td>
+															<td>{!x.xDescription}</td>
+															<td>
+																<apex:outputText value="{0,number,$#,###.##}">
+																	<apex:param value="{!x.xAmount}" />
+																</apex:outputText>
+															</td>
+														</tr>
+													</apex:repeat>
+												</table>
+												<!-- List of Matched Payments -->
+												<apex:outputPanel layout="block" style="padding-left:10px; padding-right:10px; padding-bottom:20px; padding-top:10px;">
+													<apex:outputPanel style="font-weight:bold;">Potential Payment Matches</apex:outputPanel>
+													<apex:outputPanel rendered="{!p.showMatchedPayments}">
+														<table style="width:100%; text-align:left;" class="list" border="0" cellspacing="0" cellpadding="0">
+															<thead class="">
+																<tr class="headerRow">
+																	<th class="headerRow" scope="col">
+																		<div>Match:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Score:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Date:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Opportunity:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Receipt:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Amount:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Payment Method:</div>
+																	</th>
+																</tr>
+															</thead>
+															<apex:repeat value="{!p.payments}" var="mp">
+																<tr>
+																	<td>
+																		<apex:inputCheckbox value="{!mp.isSelected}"/>
+																	</td>
+																	<td>{!mp.score}%</td>
+																	<td>
+																		<apex:outputText value="{0,date,dd'/'MM'/'yyyy}">
+																			<apex:param value="{!mp.payment.Date__c}" />
+																		</apex:outputText>
+																	</td>
+																	<td>{!mp.payment.Opportunity__r.Name}</td>
+																	<td>{!mp.payment.Description__c}</td>
+																	<td>
+																		<apex:outputText value="{0,number,$#,###.##}">
+																			<apex:param value="{!mp.payment.Amount__c}" />
+																		</apex:outputText>
+																	</td>
+																	<td>{!mp.payment.Payment_Method__c}</td>
+																</tr>
+															</apex:repeat>
+														</table>
+													</apex:outputPanel>
+													<!-- another page block table for adding a payment that is not matched-->
+													<apex:outputPanel id="manualPaymentTable">
+														<table style="width:100%; text-align:left;" class="list" border="0" cellspacing="0" cellpadding="0">
+															<thead class="">
+																<tr class="headerRow">
+																	<th class="headerRow" scope="col">
+																		<div>Match Existing</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Date:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Opportunity:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Payment:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Amount:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Payment Method:</div>
+																	</th>
+																</tr>
+															</thead>
+															<apex:repeat value="{!p.newPayments}" var="np">
+																<tr>
+																	<td>
+																		<apex:inputCheckbox value="{!np.isSelected}" styleClass="validate" html-rowVal="{!np.paymentClass}"/>
+																	</td>
+																	<td class="noShowDate">
+																		<apex:inputField value="{!np.payment.Date__c}" html-rowVal="{!np.paymentClass}"/>
+																	</td>
+																	<td>
+																		<apex:inputField value="{!np.dummyAdjustment.Opportunity__c}" html-rowVal="{!np.paymentClass}" styleClass="opportunity"/>
+																	</td>
+																	<td>
+																		<apex:inputField value="{!np.dummyAdjustment.Transaction__c}" html-rowVal="{!np.paymentClass}" styleClass="transaction">
+																			<apex:actionSupport onsubmit="goModal();" event="onchange" action="{!np.updateAmount}" reRender="manualPaymentTable, messagePanel" oncomplete="noModal();"/>
+																		</apex:inputField>
+																	</td>
+																	<td>
+																		<apex:inputField value="{!np.payment.Amount__c}" html-rowVal="{!np.paymentClass}"/>
+																	</td>
+																	<td>
+																		<apex:inputField value="{!np.payment.Payment_Method__c}" html-rowVal="{!np.paymentClass}"/>
+																	</td>
+																</tr>
+															</apex:repeat>
+														</table>
+													</apex:outputPanel>
+													<apex:commandButton value="+" alt="Add Row" action="{!p.newManualPayment}" onclick="goModal();" reRender="manualPaymentTable" oncomplete="noModal();"/>
+													<!-- Table for Matched Adjustments-->
+													<apex:outputPanel layout="block" style="padding-top:15px;"><b>Potential Adjustment Matches</b></apex:outputPanel>
+													<apex:outputPanel rendered="{!p.showMatchedAdjustments}">
+														<table style="width:100%; text-align:left;" class="list" border="0" cellspacing="0" cellpadding="0">
+															<thead class="">
+																<tr class="headerRow">
+																	<th class="headerRow" scope="col">
+																		<div>Match:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Score:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Date:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Adjustment:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Amount:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Notes:</div>
+																	</th>
+																</tr>
+															</thead>
+															<apex:repeat value="{!p.adjustments}" var="ma">
+																<tr>
+																	<td>
+																		<apex:inputCheckbox value="{!ma.isSelected}" styleClass="validate" html-rowVal="{!ma.adjustmentClass}"/>
+																	</td>
+																	<td>{!ma.score}%</td>
+																	<td>
+																		<apex:outputText value="{0,date,dd'/'MM'/'yyyy}">
+																			<apex:param value="{!ma.adjustment.Date__c}" />
+																		</apex:outputText>
+																	</td>
+																	<td>{!ma.adjustment.Name}</td>
+																	<td>
+																		<apex:outputText value="{0,number,$#,###.##}">
+																			<apex:param value="{!ma.adjustment.Amount__c}" />
+																		</apex:outputText>
+																	</td>
+																	<td>{!ma.adjustment.Notes__c}</td>
+																</tr>
+															</apex:repeat>
+														</table>
+													</apex:outputPanel>
+													<!-- Table for attaching an existing adjustment that wasn't matched-->
+													<apex:outputPanel id="paymentAdjustmentTable">
+														<table style="width:100%; text-align:left;" class="list" border="0" cellspacing="0" cellpadding="0">
+															<thead class="">
+																<tr class="headerRow">
+																	<th class="headerRow" scope="col">
+																		<div>Match Existing:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div></div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Adjustment:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div></div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div></div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div></div>
+																	</th>
+																</tr>
+															</thead>
+															<apex:repeat value="{!p.existingAdjustments}" var="ea">
+																<tr>
+																	<td>
+																		<apex:inputCheckbox value="{!ea.isSelected}" styleClass="validate" html-rowVal="{!ea.adjustmentClass}"/>
+																	</td>
+																	<td>{!ea.exAdj.Date__c}</td>
+																	<td>
+																		<apex:inputField value="{!ea.adjustment.Adjustment__c}" html-rowVal="{!ea.adjustmentClass}">
+																			<apex:actionSupport onsubmit="goModal();" event="onchange" action="{!ea.loadExisting}" reRender="paymentAdjustmentTable" oncomplete="noModal();"/>
+																		</apex:inputField>
+																	</td>
+																	<td>{!ea.exAdj.Amount__c}</td>
+																	<td>{!ea.exAdj.Notes__c}</td>
+																	<td>{!ea.exAdj.Type__c}</td>
+																</tr>
+															</apex:repeat>
+														</table>
+													</apex:outputPanel>
+													<!-- Table for adjustment info -->
+													<apex:outputPanel >
+														<table style="width:100%; text-align:left;" class="list" border="0" cellspacing="0" cellpadding="0">
+															<thead class="">
+																<tr class="headerRow">
+																	<th class="headerRow" scope="col">
+																		<div>Create Adjustment:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Date:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Amount:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Notes:</div>
+																	</th>
+																	<th class="headerRow" scope="col">
+																		<div>Type:</div>
+																	</th>
+																</tr>
+															</thead>
+															<apex:repeat value="{!p.newAdjustments}" var="na">
+																<tr>
+																	<td>
+																		<apex:inputCheckbox value="{!na.isSelected}" styleClass="validate" html-rowVal="{!na.adjustmentClass}"/>
+																	</td>
+																	<td class="noShowDate">
+																		<apex:inputField value="{!na.adjustment.Date__c}" html-rowVal="{!na.adjustmentClass}"/>
+																	</td>
+																	<td>
+																		<apex:inputField value="{!na.adjustment.Amount__c}" html-rowVal="{!na.adjustmentClass}"/>
+																	</td>
+																	<td>
+																		<apex:inputText value="{!na.adjustment.Notes__c}" html-rowVal="{!na.adjustmentClass}"/>
+																	</td>
+																	<td>
+																		<apex:inputField value="{!na.adjustment.Type__c}" html-rowVal="{!na.adjustmentClass}"/>
+																	</td>
+																</tr>
+															</apex:repeat>
+														</table>
+													</apex:outputPanel>
+												</apex:outputPanel>
+											</apex:outputPanel>
+										</apex:repeat>
+									</apex:repeat>
+								</div>
+								<div id="adjustments">
+									<apex:outputPanel id="adjustmentPanel">
+										<table style="width:100%; text-align:left;" class="list" border="0" cellspacing="0" cellpadding="0">
+											<thead class="">
+												<tr class="headerRow">
+													<th class="headerRow" scope="col">
+														<div>Date:</div>
+													</th>
+													<th class="headerRow" scope="col">
+														<div>Type:</div>
+													</th>
+													<th class="headerRow" scope="col">
+														<div>Amount:</div>
+													</th>
+													<th class="headerRow" scope="col">
+														<div>Status:</div>
+													</th>
+													<th class="headerRow" scope="col">
+														<div>Notes:</div>
+													</th>
+													<th class="headerRow" scope="col">
+														<div>Related Adjustments:</div>
+													</th>
+													<th class="headerRow" scope="col">
+														<div>Reconciled Date:</div>
+													</th>
+												</tr>
+											</thead>
+											<apex:repeat value="{!adjustments}" var="na">
+												<tr>
+													<td>{!na.adjustment.Date__c}</td>
+													<td>{!na.adjustment.Type__c}</td>
+													<td>
+														<apex:outputText value="{0,number,$#,###.##}">
+															<apex:param value="{!na.adjustment.Amount__c}" />
+														</apex:outputText>
+													</td>
+													<td>{!na.adjustment.Status__c}</td>
+													<td>{!na.adjustment.Notes__c}</td>
+													<td>{!na.adjustment.Adjustment__c}</td>
+													<td>{!na.adjustment.Resolved_Date__c}</td>
+												</tr>
+											</apex:repeat>
+										</table>
+									</apex:outputPanel>
+								</div>
+								<div id="uPayments">
+									<apex:outputPanel id="paymentPanel">
+										<table style="width:100%; text-align:left;" class="list" border="0" cellspacing="0" cellpadding="0">
+											<thead class="">
+												<tr class="headerRow">
+													<th class="headerRow" scope="col">
+														<div></div>
+													</th>
+													<th class="headerRow" scope="col">
+														<div></div>
+													</th>
+													<th class="headerRow" scope="col">
+														<div></div>
+													</th>
+													<th class="headerRow" scope="col">
+														<div></div>
+													</th>
+													<th class="headerRow" scope="col">
+														<div></div>
+													</th>
+													<th class="headerRow" scope="col">
+														<div></div>
+													</th>
+													<th class="headerRow" scope="col">
+														<div></div>
+													</th>
+												</tr>
+											</thead>
+											<apex:repeat value="{!unpresentedPayments}" var="up">
+												<tr>
+													<td>{!up.Date__c}</td>
+													<td>{!up.Opportunity__c}</td>
+													<td>{!up.Name}</td>
+													<td>{!up.Description__c}</td>
+													<td>{!up.Amount__c}</td>
+													<td>{!up.Payment_Method__c}</td>
+													<td>{!up.Journal__r.Payment_Reference__c}</td>
+												</tr>
+											</apex:repeat>
+										</table>
+									</apex:outputPanel>
+								</div>
+								<div id="uAdjustments">
+									<apex:outputPanel id="unresolvedAdjustmentPanel">
+										<table style="width:100%; text-align:left;" class="list" border="0" cellspacing="0" cellpadding="0">
+											<thead class="">
+												<tr class="headerRow">
+													<th class="headerRow" scope="col">
+														<div></div>
+													</th>
+													<th class="headerRow" scope="col">
+														<div></div>
+													</th>
+													<th class="headerRow" scope="col">
+														<div></div>
+													</th>
+													<th class="headerRow" scope="col">
+														<div></div>
+													</th>
+													<th class="headerRow" scope="col">
+														<div></div>
+													</th>
+													<th class="headerRow" scope="col">
+														<div></div>
+													</th>
+												</tr>
+											</thead>
+											<apex:repeat value="{!unresolvedAdjustments}" var="ua">
+												<tr>
+													<td>{!ua.Date__c}</td>
+													<td>{!ua.Name}</td>
+													<td>{!ua.Type__c}</td>
+													<td>{!ua.Amount__c}</td>
+													<td>{!ua.Notes__c}</td>
+													<td>{!ua.Status__c}</td>
+												</tr>
+											</apex:repeat>
+										</table>
+									</apex:outputPanel>
+								</div>
+							</apex:outputPanel>
+						</apex:pageBlockSection>
+						<apex:pageBlockSection columns="1" title="Step 5 - Bank Reconciliation Summary" id="summary" rendered="{!showStep4}">
+							<apex:commandButton value="Validate" action="{!validateTransactions}"/>
+							<h3 style="display:inline-block; margin-bottom:15px;">Trust Bank Account</h3>
+							<apex:outputText value="{0,number,$#,###.##}">
+								<span style="width:270px; display:inline-block;">Bank Statement Balance as at {!closingDate}: </span>
+								<apex:param value="{!closingBalance}" />
+							</apex:outputText>
+							<apex:outputText value="{0,number,$#,###.##}">
+								<span style="width:270px; display:inline-block;">LESS Unpresented Payments: </span>
+								<apex:param value="{!totalUnpresentedPayments}" />
+							</apex:outputText>
+							<apex:outputText value="{0,number,$#,###.##}">
+								<span style="width:270px; display:inline-block;">Less Adjustments: </span>
+								<apex:param value="{!totalUnresolvedAdjustments}" />
+							</apex:outputText>
+							<apex:outputText value="{0,number,$#,###.##}" style="display:inline-block; margin-top:15px; margin-bottom:15px; font-weight:bold;">
+								<span style="width:270px; display:inline-block; font-weight:bold;">Reconciled Bank Statement Balance: </span>
+								<apex:param value="{!reconciledBankBalance}" />
+							</apex:outputText>
+							<h3 style="display:inline-block; margin-bottom:15px; margin-top:15px;">Cashbook</h3>
+							<apex:outputText value="{0,number,$#,###.##}">
+								<span style="width:270px; display:inline-block;">Cashbook Balance: </span>
+								<apex:param value="{!trustAccount.Ledger_Balance__c}" />
+							</apex:outputText>
+							<apex:outputText value="{0,number,$#,###.##}">
+								<span style="width:270px; display:inline-block;">ADD new Receipts: </span>
+								<apex:param value="{!totalReceiptsSFDC}" />
+							</apex:outputText>
+							<apex:outputText value="{0,number,$#,###.##}"  style="display:inline-block; margin-top:15px; margin-bottom:15px; font-weight:bold;">
+								<span style="width:270px; display:inline-block; font-weight:bold;">Closing Cashbook Balance as at {!closingDate}: </span>
+								<apex:param value="{!closingCashbookBalance}" />
+							</apex:outputText>
+							<apex:outputPanel layout="block" style="margin-top:15px;">
+								<apex:outputPanel layout="block" style="float:left; font-weight:bold;">
+									<apex:outputText value="{0,number,$#,###.##}" styleClass="varianceBalance">
+										<span style="width:270px; display:inline-block;">Variance: </span>
+										<apex:param value="{!varianceBalance}" />
+									</apex:outputText>
+								</apex:outputPanel>
+								<apex:image style="margin-left:50px;" value="{!IF(varianceBalance != 0, URLFOR($Resource.Trust_Account_Rec, 'cross.png'), URLFOR($Resource.Trust_Account_Rec, 'check.png'))}"/>
+							</apex:outputPanel>
+							<apex:actionFunction name="commitTransactions" action="{!processTransactions}"/>
+							<apex:actionFunction name="validateSuccess" action="{!validateTransactions}" oncomplete="processTransactions();" reRender="summary, regRegion"/>
+							<apex:commandButton value="Process" onclick="goModal(); if(validateTransactions()) validateSuccess(); return false;"/>
+						</apex:pageBlockSection>
+					</apex:actionRegion>
+				</apex:outputPanel>
+			</apex:outputPanel>
+		</apex:pageBlock>
+	</apex:form>
+    <div id="dialog-modal" style="display: none; height:100%;">
+        <apex:image value="{!$Resource.recLoader}"/>
+    </div>
+</apex:page>

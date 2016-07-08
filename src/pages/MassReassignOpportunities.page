@@ -1,0 +1,100 @@
+<apex:page controller="MassReassignOpportunitiesController" tabStyle="Opportunity">
+<apex:form id="idForm">
+	<apex:sectionheader title="{!$Label.HeaderText}" />
+	<apex:pageBlock title="{!$Label.SearchBlockTitle}" > 
+		<apex:pageMessages />
+		<apex:pageblocksection title="{!$Label.ViewSearchSection}">
+			<apex:panelGrid columns="3"> 
+				<apex:outputLabel value="{!$Label.DisplayViewLabel}"/> 
+				<apex:selectList value="{!filterId}" size="1">
+					<apex:actionSupport event="onchange" action="{!refreshOptyList}" rerender="idForm"/>
+					<apex:selectOptions value="{!listviewoptions}"/> 
+				</apex:selectList>
+				<apex:outputLink value="/ui/list/FilterEditPage?ftype=o&retURL=/apex/MassReassignOpportunities&cancelURL=/apex/MassReassignOpportunities">{!$Label.NewViewLinkLabel}</apex:outputLink>
+			</apex:panelGrid> 
+		</apex:pageblocksection>
+
+		<apex:pageblocksection title="{!$Label.CriteriaSearchSection}">
+			<apex:inputfield value="{!searchRecord.Name}" required="false"/>
+			<apex:inputfield value="{!searchRecord.StageName}" required="false"/>
+			<apex:inputfield value="{!searchRecord.type}" required="false"/>
+			<apex:inputfield value="{!searchRecord.AccountId}" required="false"/>
+			<apex:pageblocksectionItem >
+				<apex:outputlabel value="{!$Label.CreatedDateCriteriaLabel}"/>
+				<apex:pageblocksection columns="1">
+					<apex:inputfield value="{!helperRecord.From__c}"/>
+					<apex:inputfield value="{!helperRecord.To__c}"/>
+				</apex:pageblocksection>
+			</apex:pageblocksectionItem>	
+			<apex:pageblocksectionItem >
+				<apex:outputlabel value="{!$Label.CloseDateCriteriaLabel}"/>
+				<apex:pageblocksection columns="1">
+					<apex:inputfield value="{!helperRecord.ClosedDate_From__c}"/>
+					<apex:inputfield value="{!helperRecord.ClosedDate_To__c}"/>
+				</apex:pageblocksection>
+			</apex:pageblocksectionItem>
+		</apex:pageblocksection>
+		<apex:pageblocksection columns="1">
+			<apex:outputpanel >
+				<CENTER>
+					<apex:actionstatus id="search">
+			    	    <apex:facet name="start">
+			        	    <apex:commandbutton value="{!$Label.SearchingBtn}"  disabled="true"/>
+			            </apex:facet>
+			            <apex:facet name="stop">
+			                 <apex:commandbutton value="{!$Label.SearchBtn}" action="{!refreshOptyListBySearch}" status="search" rerender="idForm"/>
+			            </apex:facet>                    
+			        </apex:actionstatus>
+				</CENTER>
+			</apex:outputpanel>
+		</apex:pageblocksection>
+	</apex:pageBlock>
+	<apex:pagemessage severity="warning" strength="2" title="{!$Label.TooManyRowsTitle}" summary="{!$Label.TooManyRowsSummary}" rendered="{!tooManyResults}"/>
+	<apex:pagemessage severity="info" strength="2" title="{!$Label.AssignSuccessTitle}" summary="{!$Label.AssignSuccessSummary}" rendered="{!isSuccess}"/>	
+	<apex:pagemessage severity="info" strength="2" title="{!$Label.NoResultTitle}" summary="{!$Label.NoResultSummary}" rendered="{!AND(optyListSize=0,NOT(isSuccess),searchPerformed)}"/>	
+	<apex:pageblock title="{!$Label.ResultBlockTitle}"  id="idResultatBlock" rendered="{!optyListSize>0}">
+		<apex:pagemessages />
+		<apex:pageblockbuttons location="top">
+				<apex:outputlabel value="{!$Label.AssignToBtn}"/>
+				<apex:inputfield value="{!helperRecord.Assign_to__c}"/>
+				<apex:actionstatus id="assignStatus">
+                        <apex:facet name="start">
+                            <apex:commandbutton value="{!$Label.AssigningBtn}" action="{!Assign}" disabled="true" status="assignStatus" rerender="idForm"/>
+                        </apex:facet>
+                        <apex:facet name="stop">
+                            <apex:commandbutton value="{!$Label.AssignBtn}" action="{!Assign}" status="assignStatus" rerender="idForm"/>
+                        </apex:facet>
+				</apex:actionstatus>
+
+		</apex:pageblockbuttons>
+		<apex:pageblocktable value="{!optyList}" var="line" id="idResultatBlockTable">
+        	<apex:column >
+            	<apex:inputcheckbox value="{!line.selected}"/>
+                <apex:facet name="header">
+					<INPUT TYPE="CHECKBOX" onclick="selectAll(this,'{!$Component.idResultatBlockTable}');"/>
+					<script>
+						function selectAll(el,parentElementId){
+							var inputCB = document.getElementById(parentElementId).getElementsByTagName("input");
+							for(var i=0; i<inputCB.length; i++){
+								inputCB[i].checked = el.checked;									
+							}								
+						}
+					</script>
+				</apex:facet>
+            </apex:column>
+			<apex:column value="{!line.oOpty.Name}"/>
+			<apex:column value="{!line.oOpty.StageName}"/>
+			<apex:column value="{!line.oOpty.OwnerId}">
+				<apex:facet name="footer">
+					<apex:outputlabel value="{!$Label.TotalFooterLabel}"/>
+				</apex:facet>
+			</apex:column>
+			<apex:column value="{!line.oOpty.CloseDate}">
+				<apex:facet name="footer">
+					<apex:outputtext value="{!optyListSize}"/>
+				</apex:facet>
+			</apex:column>
+		</apex:pageblocktable>
+		</apex:pageblock>
+</apex:form>	
+</apex:page>

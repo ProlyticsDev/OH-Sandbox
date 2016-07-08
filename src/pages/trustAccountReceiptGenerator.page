@@ -1,0 +1,155 @@
+<apex:page standardController="Receipt__c" recordSetVar="receipts" extensions="trustAccountReceiptGeneratorController,trustAccountReceiptHandling" showHeader="true" sidebar="true" title="Trust Account Receipt Generator">
+
+	<head>
+
+		<apex:stylesheet value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.min.css"/>
+
+  		<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+  		<script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+
+
+		<script type="text/javascript">
+
+			var j$ = jQuery.noConflict();
+			var receiptTable;
+			var receiptCount;
+			var receiptIndex;
+
+			function emailReceipts()
+			{
+				j$( "#theDialog" ).dialog("open");
+
+				var receiptIds = new Array();
+
+				j$('.receiptTable').find('.dataRow').each(function(index, value)
+				{
+					if(j$(value).find('.emailCheckbox').is(':checked'))
+					{
+						receiptIds.push(j$(value).find('.idValue').val());
+					}
+				});
+
+				if(receiptIds.length > 0)
+				{
+					//send the invoice ids to the remote method for processing.
+					j$("#theDialog").html('<p>Processing '+receiptIds.length+' Receipts</p>');
+
+					setTimeout( function()
+					{
+						//save the list length
+						receiptCount = receiptIds.length;
+
+						j$.each(receiptIds, function(index, value)
+						{
+							setTimeout(function()
+							{
+								receiptIndex = index;
+								Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.trustAccountReceiptHandling.sendAndStoreReceipt}', value, receiptProcessed,
+									{buffer: false, escape: true}
+								);
+							}, index*1000);
+						});
+					
+					}, 1000); 
+				}
+				else
+				{
+					alert('No Record to Process!');
+					j$( "#theDialog" ).dialog("close");
+				} 
+			}
+		
+			j$(window).bind("load", function()
+			{
+				var d = j$("#theDialog");
+
+				d.dialog
+				({
+					modal: true,
+					dialogClass: "no-close",
+					draggable: false,
+					resizable: false,
+					autoOpen: false
+						  
+				});
+			});
+		
+			function receiptProcessed(result, event)
+			{
+				//callback for remoting method above.
+				if(event.status)
+				{
+					j$("#theDialog").html('<p>Processed Receipt: <br/>'+result+'</p><br/><br/>Receipt: '+ (receiptIndex + 1) + '/' + receiptCount);
+
+					if (receiptIndex == receiptCount - 1)
+					{
+						setTimeout(function()
+						{
+							//hide modal
+							j$( "#theDialog" ).dialog( "close" );
+
+							//call action function to refresh page.
+							// invoiceRefresh();
+						}, 1000)
+					}
+				}
+				else if(event.type === 'exception')
+				{
+					alert(event.message);
+				}
+			}
+
+			function openPrintWindow()
+			{
+				window.open('{!$Page.trustAccountReceiptsToPrint}?ids=' + j$('#printIds').val());
+			}
+				
+		</script>
+	</head>
+
+	<apex:form >
+		<apex:pageBlock mode="edit" title="Trust Account Receipt Generator" id="theBlock">
+
+			<input type="hidden" value="{!printIds}" id="printIds"/>
+
+			<apex:pageMessages />
+
+			<apex:pageBlockButtons >
+				<apex:commandButton action="{!SaveAndEmail}" value="Save & Email" rerender="theBlock" rendered="{!NOT(saved)}" oncomplete="emailReceipts();"/>
+				<apex:commandButton action="{!Print}" value="Print Receipts" rerender="theBlock" rendered="{!saved}" oncomplete="openPrintWindow();"/>
+			</apex:pageBlockButtons>
+
+			<apex:pageBlockTable value="{!receipts}" var="r" styleClass="receiptTable">
+				<apex:column headerValue="Email">
+					<apex:inputCheckbox value="{!toEmail[r.Id]}" styleClass="emailCheckbox"/>
+					<input type="hidden" class="idValue" value="{!r.Id}"/>
+				</apex:column>
+				<apex:column headerValue="Print">
+					<apex:inputCheckbox value="{!toPrint[r.Id]}"/>
+				</apex:column>
+				<apex:column headerValue="Preference" value="{!r.Communication_Preference__c}"/>
+				<apex:column value="{!r.Date__c}"/>
+				<apex:column value="{!r.Project__c}"/>
+				<apex:column value="{!r.Trust_Account__r.Name}"/>
+				<apex:column value="{!r.Received_From__c}"/>
+				<apex:column headerValue="Address">
+					<apex:outputText value="{!IF(r.Opportunity__r.Account.BillingStreet != '', r.Opportunity__r.Account.BillingStreet + ', ', '')}"/>
+					<apex:outputText value="{!IF(r.Opportunity__r.Account.BillingCity != '', r.Opportunity__r.Account.BillingCity + ', ', '')}"/>
+					<apex:outputText value="{!IF(r.Opportunity__r.Account.BillingState != '', r.Opportunity__r.Account.BillingState, '')}"/>
+				</apex:column>
+				<apex:column value="{!r.Opportunity__r.Account.BillingPostalCode}"/>
+				<apex:column value="{!r.Opportunity__r.Account.Phone}"/>
+				<apex:column value="{!r.Opportunity__r.Account.Person_Account_Email__c}"/>
+				<apex:column value="{!r.Amount__c}"/>
+				<apex:column value="{!r.Description__c}"/>
+				<apex:column value="{!r.Payment_Method__c}"/>
+				<apex:column value="{!r.Trust_Account_Receipt_Number__r.TA_Receipt_Number__c}"/>
+			</apex:pageBlockTable>
+
+		</apex:pageBlock>
+	</apex:form>
+
+    <div id="theDialog" title="Processing">
+    </div>
+
+</apex:page>

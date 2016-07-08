@@ -1,0 +1,38 @@
+<apex:page standardController="Trust_Account__c" extensions="TAReportGeneratorControllerMain" sidebar="false" >
+    <apex:form id="form">
+        <apex:outputPanel id="main">
+            <apex:pageBlock title="Creditors Trial Balance">  
+                <apex:pageBlockButtons >
+                    <apex:commandButton action="{!saveCreditorsTrialBalanceReport}" value="Save Report"/>
+                    <apex:commandButton action="{!cancel}" value="Close"/>
+                </apex:pageBlockButtons>
+                
+                <apex:outputPanel id="sub">
+                    <table width = "20%">
+                        <tr>
+                            <td><apex:outputText >Report Year</apex:outputText>
+                                <apex:selectList id="chooseYear" value="{!year}" size="1" label="Report Year">
+                                    <apex:actionSupport event="onchange"  rerender="output"/>
+                                    <apex:selectOptions value="{!years}"/>
+                                </apex:selectList> 
+                            </td>
+                            <td><apex:outputText >Report Month</apex:outputText>
+                                <apex:selectList id="chooseMonth" value="{!month}" size="1" label="Report Month">
+                                    <apex:actionSupport event="onchange"  rerender="output" />
+                                    <apex:selectOptions value="{!months}"/>
+                                </apex:selectList>
+                            </td>	
+                        </tr>
+                    </table>
+                </apex:outputPanel>
+                <br/>
+                
+                <apex:outputPanel id="output" >
+                    <apex:iframe width="100%" id="pageResult" src="{!reportIFrameUrlCreditorsTrialBalance}" height="600px" ></apex:iframe>
+                </apex:outputPanel>
+                
+            </apex:pageBlock>
+        </apex:outputPanel>
+    </apex:form>
+    
+</apex:page>

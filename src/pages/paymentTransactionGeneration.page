@@ -1,0 +1,4 @@
+<apex:page standardController="Opportunity" recordSetVar="opportunities" showHeader="true" sidebar="true">
+
+   
+</apex:page>

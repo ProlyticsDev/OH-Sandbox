@@ -1,0 +1,3 @@
+<apex:page standardController="Suburb__c" tabStyle="Suburb__c" extensions="StandardController" >
+    <c:MediaItemCreation isProduct="false" isProject="false" isCompProj="false" isSuburb="true" stdController="{!stdController}" /> 
+</apex:page>

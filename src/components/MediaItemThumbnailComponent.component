@@ -1,0 +1,44 @@
+<apex:component controller="MediaItemThumbnailController" allowDML="true" >
+	<apex:attribute type="ApexPages.StandardController" description="The set controller for the object" name="stdController" assignTo="{!stdCont}" /> 
+	<html lang="en">
+		<head>
+ 			<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"/>
+ 		</head>
+   
+   		<body> 
+   			<div class="container-fluid">
+   				<div class="row">
+   					<apex:outputPanel rendered="{!!hasMediaItems}">
+	   					<div class="page-header"> 
+	   						<h1>No media items have been uploaded</h1>
+	   					</div>
+   					</apex:outputPanel>
+   					<apex:outputPanel rendered="{!hasMediaItems}">
+	   					<apex:repeat var="mediaItem" value="{!thumbnailUrls}">
+					  		<div class="col-xs-4 col-md-1">
+							    <a href="{!mediaItem.CDN_URL__c}" id="docLink" target="_blank" class="thumbnail" data-toggle="tooltip" title="{!mediaItem.Name}" data-placement="auto">
+							      <img src="{!mediaItem.CDN_Thumbnail_URL__c}" class="img-responsive" data-holder-rendered="true" style="width: 100%; display: block;"/>
+							    </a>
+							    <div class="caption" style="word-wrap:break-word;">
+							    	<center>
+							    		<a href="/{!mediaItem.Id}" target="_blank">Manage</a>
+							    	</center>
+							     	<!--<h5>{!mediaItem.Name}</h5>--> 
+							    </div>
+							</div>
+					    </apex:repeat>
+				    </apex:outputPanel>
+   				</div>
+   			</div>
+   		</body>
+   		<script   src="https://code.jquery.com/jquery-2.2.4.min.js"   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="   crossorigin="anonymous"></script>
+   		<script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+   		<script>
+   			$(function () {
+  				$('[data-toggle="tooltip"]').tooltip()
+			})
+
+		
+   		</script>
+    </html>
+</apex:component>

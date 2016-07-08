@@ -1,0 +1,1356 @@
+<apex:page standardController="Opportunity" extensions="manageItemsExtension" tabStyle="Item__c" sidebar="false">
+<apex:outputPanel id="thePage">
+<apex:includeScript value="{!$Resource.jQuery}"/>
+<script>
+    var j$ = jQuery.noConflict();
+    
+    j$(document).ready(function(){
+        
+        replaceDate();
+        
+
+    
+    });
+   
+    function replaceDate(){
+        j$(apptDate).next().hide();
+        j$('<span class="dateFormat">[&nbsp;<a href="javascript:setPlus(3, apptDate, resDate);">+3 days</a>&nbsp;]</span>').insertAfter(j$(apptDate));
+        
+        j$(fdDate).next().hide();
+        j$('<span class="dateFormat" id="fdDate_7">[&nbsp;<a class="plusDate" href="javascript:setPlus(7, fdDate, apptDate);">+7 days</a>&nbsp;]</span>').insertAfter(j$(fdDate));
+        j$('<span class="dateFormat" id="fdDate_14">[&nbsp;<a class="plusDate" href="javascript:setPlus(14, fdDate, apptDate);">+14 days</a>&nbsp;]</span>').insertAfter(j$(fdDate_7));
+        j$('<span class="dateFormat" id="fdDate_21">[&nbsp;<a class="plusDate" href="javascript:setPlus(21, fdDate, apptDate);">+21 days</a>&nbsp;]</span>').insertAfter(j$(fdDate_14));
+        j$('<span class="dateFormat" id="fdDate_28">[&nbsp;<a class="plusDate" href="javascript:setPlus(28, fdDate, apptDate);">+28 days</a>&nbsp;]</span>').insertAfter(j$(fdDate_21));
+        
+        j$(soilTestDate).next().hide();
+        j$('<span class="dateFormat" id="soilTestDate_7">[&nbsp;<a class="plusDate" href="javascript:setPlus(7, soilTestDate, apptDate);">+7 days</a>&nbsp;]</span>').insertAfter(j$(soilTestDate));
+        j$('<span class="dateFormat" id="soilTestDate_14">[&nbsp;<a class="plusDate" href="javascript:setPlus(14, soilTestDate, apptDate);">+14 days</a>&nbsp;]</span>').insertAfter(j$(soilTestDate_7));
+        j$('<span class="dateFormat" id="soilTestDate_21">[&nbsp;<a class="plusDate" href="javascript:setPlus(21, soilTestDate, apptDate);">+21 days</a>&nbsp;]</span>').insertAfter(j$(soilTestDate_14));
+        j$('<span class="dateFormat" id="soilDate_28">[&nbsp;<a class="plusDate" href="javascript:setPlus(28, soilTestDate, apptDate);">+28 days</a>&nbsp;]</span>').insertAfter(j$(soilTestDate_21));
+        
+        j$(salePropertyDate).next().hide();
+        j$('<span class="dateFormat" id="salePropertyDate_7">[&nbsp;<a class="plusDate" href="javascript:setPlus(7, salePropertyDate, apptDate);">+7 days</a>&nbsp;]</span>').insertAfter(j$(salePropertyDate));
+        j$('<span class="dateFormat" id="salePropertyDate_14">[&nbsp;<a class="plusDate" href="javascript:setPlus(14, salePropertyDate, apptDate);">+14 days</a>&nbsp;]</span>').insertAfter(j$(salePropertyDate_7));
+        j$('<span class="dateFormat" id="salePropertyDate_21">[&nbsp;<a class="plusDate" href="javascript:setPlus(21, salePropertyDate, apptDate);">+21 days</a>&nbsp;]</span>').insertAfter(j$(salePropertyDate_14));
+        j$('<span class="dateFormat" id="salePropertyDate_28">[&nbsp;<a class="plusDate" href="javascript:setPlus(28, salePropertyDate, apptDate);">+28 days</a>&nbsp;]</span>').insertAfter(j$(salePropertyDate_21));
+        
+        j$(firbDueDate).next().hide();
+        j$('<span class="dateFormat" id="firbDueDate_7">[&nbsp;<a class="plusDate" href="javascript:setPlus(7, firbDueDate, apptDate);">+7 days</a>&nbsp;]</span>').insertAfter(j$(firbDueDate));
+        j$('<span class="dateFormat" id="firbDueDate_14">[&nbsp;<a class="plusDate" href="javascript:setPlus(14, firbDueDate, apptDate);">+14 days</a>&nbsp;]</span>').insertAfter(j$(firbDueDate_7));
+        j$('<span class="dateFormat" id="firbDueDate_21">[&nbsp;<a class="plusDate" href="javascript:setPlus(21, firbDueDate, apptDate);">+21 days</a>&nbsp;]</span>').insertAfter(j$(firbDueDate_14));
+        j$('<span class="dateFormat" id="firbDueDate_28">[&nbsp;<a class="plusDate" href="javascript:setPlus(28, firbDueDate, apptDate);">+28 days</a>&nbsp;]</span>').insertAfter(j$(firbDueDate_21));
+        
+        j$(otherDate).next().hide();
+        j$('<span class="dateFormat" id="otherDate_7">[&nbsp;<a class="plusDate" href="javascript:setPlus(7, otherDate, apptDate);">+7 days</a>&nbsp;]</span>').insertAfter(j$(otherDate));
+        j$('<span class="dateFormat" id="otherDate_14">[&nbsp;<a class="plusDate" href="javascript:setPlus(14, otherDate, apptDate);">+14 days</a>&nbsp;]</span>').insertAfter(j$(otherDate_7));
+        j$('<span class="dateFormat" id="otherDate_21">[&nbsp;<a class="plusDate" href="javascript:setPlus(21, otherDate, apptDate);">+21 days</a>&nbsp;]</span>').insertAfter(j$(otherDate_14));
+        j$('<span class="dateFormat" id="otherDate_28">[&nbsp;<a class="plusDate" href="javascript:setPlus(28, otherDate, apptDate);">+28 days</a>&nbsp;]</span>').insertAfter(j$(otherDate_21));
+        
+    }
+        
+        function setPlus(count, objComp, objToConsider){
+            //try and get the reservation date.
+            var newDate;
+            var plusDate;
+            if(!j$(objToConsider).val()){
+               //is false, use today + count
+               newDate = new Date();
+               plusDate = new Date();
+               plusDate.setDate(newDate.getDate()+count);
+            }
+            else{
+                //take the text
+                var textDate = j$(objToConsider).val().split("/");            
+                //turn it into a date
+                var newDate = new Date(textDate[2], textDate[1] - 1, textDate[0]);
+                //add count days.
+                plusDate = newDate;
+                plusDate.setDate(plusDate.getDate()+count);
+            }
+            
+            var d = plusDate.getDate().toString();
+            var m = (plusDate.getMonth()+1).toString();
+            var y = plusDate.getFullYear().toString();
+            
+            //make sure the days and months are to digits long
+            if(d.length == 1){
+                d = '0'+d;
+            }
+            if(m.length == 1){
+                m = '0'+m;
+            }
+            
+            j$(objComp).val(d + '/' + m + '/' + y);
+        }
+        
+        function updateDeposit(per){
+            //get the value in the deposit field
+            var contractText = j$('#contractVal').text();
+            contractText = contractText.trim().substr(1).split(',').join('');
+            var contractVal = parseFloat(contractText);
+            j$(deposit).val((contractVal*(per/100)).toFixed(2)+'');
+            return false;
+        }
+        
+        function landUpdateDeposit(per){
+            //get the value in the deposit field
+            var contractText = j$('#landContractVal').text();
+            contractText = contractText.trim().substr(1).split(',').join('');
+            var contractVal = parseFloat(contractText);
+            j$(landDeposit).val((contractVal*(per/100)).toFixed(2)+'');
+            return false;
+        }
+        function splitLandUpdateDeposit(per){
+            //get the value in the deposit field
+            var contractText = j$('#splitLandContractVal').text();
+            contractText = contractText.trim().substr(1).split(',').join('');
+            var contractVal = parseFloat(contractText);
+            j$(splitLandDeposit).val((contractVal*(per/100)).toFixed(2)+'');
+            return false;
+        }
+        function splitBuildUpdateDeposit(per){
+            //get the value in the deposit field
+            var contractText = j$('#splitBuildContractVal').text();
+            contractText = contractText.trim().substr(1).split(',').join('');
+            var contractVal = parseFloat(contractText);
+            j$(splitBuildDeposit).val((contractVal*(per/100)).toFixed(2)+'');
+            return false;
+        }
+        function updatePurchaser(){
+            //set the purchaser name
+            var purchaserText = '{!JSENCODE(Opportunity.Account.Salutation+' '+Opportunity.Account.Name)}';
+            j$(purchaser).val(purchaserText);
+            return false;
+        }
+        
+        function disablePicklists(){
+            //find all disabledPicklist select options and disable them.
+            j$('.disabledPicklist').prop('disabled', true);
+        
+        }
+    
+    	function jq(myid) {
+ 			return "#" + myid.replace( /(:|\.|\[|\]|,)/g, "\\\\$1" );
+ 		}
+
+       //TODO: This code is really ugly. Please re-factor.
+       function validate(position) {
+           var y = j$('.noCon:checkbox:checked');
+           if(y.length == 0) {
+               var x = j$('.chkGroup:checkbox:checked');
+       	       if (x.length > 0) {
+                   if (position == 'top') {
+                       saveSelections();
+                   } else {
+                       saveSelectionsBottom();    
+                   }
+                   return true;
+               }
+           } else if (y.length == 1) {
+               if (position == 'top') {
+                   saveSelections();
+               } else {
+                   saveSelectionsBottom();    
+               } 
+               return true;
+           }
+           
+           var showConditions = {!showResiDetails};
+           if (!showConditions) {
+           	   if (position == 'top') {
+                   saveSelections();
+               } else {
+                   saveSelectionsBottom();    
+               } 
+               return true;   
+           }
+           
+           alert('At least one condition must be checked when \'No Conditions\' is unchecked');
+           return false;
+       }
+</script>
+<!-- Script to disable enter key -->
+<script language="javascript" type="text/javascript">
+    function stopRKey(evt) {
+       var evt = (evt) ? evt : ((event) ? event : null);
+       var node = (evt.target) ? evt.target : ((evt.srcElement) ? evt.srcElement : null);
+       if ((evt.keyCode == 13) && (node.type=="text")) {return false;}
+    }
+    
+    document.onkeypress = stopRKey; 
+</script>
+<style type="text/css">
+    #reservationTable tr td, #landReservationTable tr td, #splitReservationTable tr td{
+        padding-bottom:5px;
+    }
+    #reservationTable tr.noMargin td, #landReservationTable tr.noMargin td, #splitReservationTable tr.noMargin td{
+        padding-bottom:0;
+    }
+    #reservationTable tr.doubleMargin td, #landReservationTable tr.doubleMargin td, #splitReservationTable tr.doubleMargin td{
+        padding-bottom:10px;
+    }
+</style>
+    <apex:outputField rendered="false" value="{!Opportunity.Project__c}"/>
+    <apex:outputField rendered="false" value="{!Opportunity.Full_Deposit_Required__c}"/>
+    <apex:outputField rendered="false" value="{!Opportunity.Full_Deposit_Required_Build__c}"/>
+    <apex:outputField rendered="false" value="{!Opportunity.Property_Type__c}"/>
+    <apex:outputField rendered="false" value="{!Opportunity.Account.Type}"/>
+    <apex:outputField rendered="false" value="{!Opportunity.Project__r.VA_Override__c}"/>
+    <apex:outputField rendered="false" value="{!Opportunity.Salesperson_pa__c}"/>
+    <apex:outputField rendered="false" value="{!Opportunity.Project__r.Trust_Account__c}"/>
+    <apex:outputPanel id="messages">
+        <apex:pageMessages />
+    </apex:outputPanel>
+    <apex:outputPanel id="form" rendered="{!showForm}">
+        <apex:sectionHeader title="Property Selection"/>
+        <apex:form >
+            <apex:pageBlock mode="edit">
+                <apex:actionFunction action="{!saveSelections}" name="saveSelections" status="saveStatusTop" reRender="thePage"/>
+                <apex:pageBlockButtons location="top">
+                    <apex:actionStatus id="saveStatusTop">
+                        
+                        <apex:facet name="start"><apex:commandButton value="Save" disabled="true"/></apex:facet>
+                        <apex:facet name="stop"><apex:commandButton value="Save" onclick="validate('top'); return false;"/></apex:facet>
+                        
+                    </apex:actionStatus>
+                    <apex:commandButton value="Exit" action="{!exit}" immediate="true" onclick="return confirm('Are you sure you wish to exit? Any unsaved changes will be lost!');"/>
+                    <apex:commandButton value="Make a Reservation" action="{!MakeReservation}" immediate="true" rendered="{!showResiDetails = false}"/>
+                </apex:pageBlockButtons>
+                <apex:pageblockSection title="Account & Opportunity Details" id="oppSection">
+                    <apex:pageBlockSectionItem >
+                        <apex:outputLabel >Account Name</apex:outputLabel>
+                        <apex:outputPanel >
+                            {!Opportunity.Account.Salutation} {!Opportunity.Account.Name}
+                        </apex:outputPanel>
+                    </apex:pageBlockSectionItem>
+                    <!--apex:outputField value="{!opportunity.Ref__c}"/-->
+                    <apex:outputField value="{!opportunity.Customer_Reference__c}"/>
+                    <apex:outputField value="{!opportunity.Name}"/>
+                    <apex:outputField value="{!opportunity.RecordType.Name}" label="Record Type"/>
+                    <apex:pageBlockSectionItem ></apex:pageBlockSectionItem>
+                    <apex:outputField value="{!opportunity.StageName}"/>
+                </apex:pageblockSection>
+                <apex:pageblockSection title="Product Selection" columns="1">
+                    <apex:actionRegion >
+                         <!-- This table is rendered when there is an active product item  land -->
+                        <apex:pageBlockTable value="{!productSelectionList}" var="p" rendered="{!AND(listSize >= 1, productSelectionList[0].Product__r.Contract_Type__c != 'Split Contract', productSelectionList[0].Product__r.Type__c = 'Land')}">
+                            <apex:column headerValue="Action">
+                                <apex:commandButton value="Remove" action="{!removeRecord}" immediate="true" rendered="{!CASE(dbStage, 'New Enquiry', 'true', 'Contacted', 'true', 'Qualified', 'true', 'Appointment', 'true', 'false')}" onclick="return confirm('Are you sure you wish to remove this product?');"/>
+                                <apex:commandButton value="Transfer" action="{!transferRecord}" immediate="true" rendered="{!CASE(dbStage, 'Reservation Pending', 'true', 'Reservation', 'true', 'false')}" onclick="return confirm('Are you sure you wish to transfer from this product?  You will be required to select a new product before saving.');"/>
+                            </apex:column>
+                            <apex:column headerValue="Project">{!p.Product__r.Project__r.Name}</apex:column>
+                            <apex:column headerValue="Project Stage">{!p.Product__r.Stage__c}</apex:column>
+                            <apex:column headerValue="Type">{!p.Product__r.Type__c}</apex:column>
+                            <apex:column headerValue="Product">{!p.Product__r.Name}</apex:column>
+                            <apex:column headerValue="Frontage">{!p.Product__r.Frontage__c}</apex:column>
+                            <apex:column headerValue="Depth">{!p.Product__r.Depth__c}</apex:column>
+                            <apex:column headerValue="Lot Size">{!p.Product__r.Size__c}</apex:column>
+                            <apex:column headerValue="List Price">
+                                <apex:outputText value="{0,number,$#,###.##}">
+                                    <apex:param value="{!p.Product__r.List_Price__c}" /> 
+                                </apex:outputText>
+                            </apex:column>
+                        </apex:pageBlockTable>
+                        <!-- This table is rendered when there is an active product item  aparments -->
+                        <apex:pageBlockTable value="{!productSelectionList}" var="p" rendered="{!AND(listSize >= 1, productSelectionList[0].Product__r.Contract_Type__c != 'Split Contract', productSelectionList[0].Product__r.Type__c != 'Land')}">
+                            <apex:column headerValue="Action">
+                                <apex:commandButton value="Remove" action="{!removeRecord}" immediate="true" rendered="{!CASE(Opportunity.StageName, 'New Enquiry', 'true', 'Contacted', 'true', 'Qualified', 'true', 'Appointment', 'true', 'false')}" onclick="return confirm('Are you sure you wish to remove this product?');"/>
+                                <apex:commandButton value="Transfer" action="{!transferRecord}" immediate="true" rendered="{!CASE(Opportunity.StageName, 'Reservation Pending', 'true', 'Reservation', 'true', 'false')}" onclick="return confirm('Are you sure you wish to transfer from this product?  You will be required to select a new product before saving.');"/>
+                            </apex:column>
+                            <apex:column headerValue="Project">{!p.Product__r.Project__r.Name}</apex:column>
+                            <apex:column headerValue="Project Stage">{!p.Product__r.Stage__c}</apex:column>
+                            <apex:column headerValue="Type">{!p.Product__r.Type__c}</apex:column>
+                            <apex:column headerValue="Product">{!p.Product__r.Name}</apex:column>
+                            <apex:column headerValue="Bedrooms">{!p.Product__r.Bdr__c}</apex:column>
+                            <apex:column headerValue="Bathrooms">{!p.Product__r.Bth__c}</apex:column>
+                            <apex:column headerValue="Car Parks">{!p.Product__r.Car_Parks__c}</apex:column>
+                            <apex:column headerValue="Size">{!p.Product__r.Size__c}</apex:column>
+                            <apex:column headerValue="List Price">
+                                <apex:outputText value="{0,number,$#,###.##}">
+                                    <apex:param value="{!p.Product__r.List_Price__c}" /> 
+                                </apex:outputText>
+                            </apex:column>
+                        </apex:pageBlockTable>
+                        <!-- This table is rendered when there is an active product item - split contract  -->
+                        <apex:pageBlockTable value="{!productSelectionList}" var="p" rendered="{!AND(listSize >= 1, productSelectionList[0].Product__r.Contract_Type__c = 'Split Contract')}">
+                            <apex:column headerValue="Action">
+                                <apex:commandButton value="Remove" action="{!removeRecord}" immediate="true" rendered="{!CASE(Opportunity.StageName, 'New Enquiry', 'true', 'Contacted', 'true', 'Qualified', 'true', 'Appointment', 'true', 'false')}" onclick="return confirm('Are you sure you wish to remove this product?');"/>
+                                <apex:commandButton value="Transfer" action="{!transferRecord}" immediate="true" rendered="{!CASE(Opportunity.StageName, 'Reservation Pending', 'true', 'Reservation', 'true', 'false')}" onclick="return confirm('Are you sure you wish to transfer from this product?');"/>
+                            </apex:column>
+                            <apex:column headerValue="Project">{!p.Product__r.Project__r.Name}</apex:column>
+                            <apex:column headerValue="Project Stage">{!p.Product__r.Stage__c}</apex:column>
+                            <apex:column headerValue="Type">{!p.Product__r.Type__c}</apex:column>
+                            <apex:column headerValue="Product">{!p.Product__r.Name}</apex:column>
+                            <apex:column headerValue="Bedrooms" rendered="{!p.Product__r.Type__c != 'Land'}">{!p.Product__r.Bdr__c}</apex:column>
+                            <apex:column headerValue="Bathrooms" rendered="{!p.Product__r.Type__c != 'Land'}">{!p.Product__r.Bth__c}</apex:column>
+                            <apex:column headerValue="Car Parks" rendered="{!p.Product__r.Type__c != 'Land'}">{!p.Product__r.Car_Parks__c}</apex:column>
+                            <apex:column headerValue="Frontage" rendered="{!p.Product__r.Type__c = 'Land'}">{!p.Product__r.Frontage__c}</apex:column>
+                            <apex:column headerValue="Depth" rendered="{!p.Product__r.Type__c = 'Land'}">{!p.Product__r.Depth__c}</apex:column>
+                            <apex:column headerValue="Lot Size" rendered="{!p.Product__r.Type__c = 'Land'}">{!p.Product__r.Size__c}</apex:column>
+                            <apex:column headerValue="Land Price">
+                                <apex:outputText value="{0,number,$#,###.##}">
+                                    <apex:param value="{!p.Product__r.Land_Price__c}" />
+                                </apex:outputText>
+                            </apex:column>                            
+                            <apex:column headerValue="Build Price">
+                                <apex:outputText value="{0,number,$#,###.##}">
+                                    <apex:param value="{!p.Product__r.Build_Price__c}" />
+                                </apex:outputText> 
+                            </apex:column>
+                            <apex:column headerValue="List Price">
+                                <apex:outputText value="{0,number,$#,###.##}">
+                                    <apex:param value="{!p.Product__r.List_Price__c}" /> 
+                                </apex:outputText>
+                            </apex:column>
+                        </apex:pageBlockTable>
+                        
+                        <!-- This table is rendered when there are no active product items. -->
+                        <apex:pageBlockTable value="{!productSelectionList}" var="p" rendered="{!listSize < 1}" id="itemTable">
+                            <apex:column headerValue="Project">{!Opportunity.Project__r.Name}</apex:column>
+                            <apex:column headerValue="Project Stage">
+                                <apex:selectList size="1" value="{!projectStage}">
+                                    <apex:selectOptions value="{!stageOptions}"/>
+                                    <apex:actionSupport action="{!typeFilter}" reRender="itemTable, messages" event="onchange" status="stageStatus"/>
+                                </apex:selectList>
+                                <apex:outputPanel layout="block" style="float:right; width:20px; height:20px; padding-top:3px;">
+                                    <apex:actionStatus id="stageStatus">
+                                        <apex:facet name="start">
+                                            <apex:image value="{!$Resource.itemloader}"/>                                
+                                        </apex:facet>
+                                    </apex:actionStatus>
+                                </apex:outputPanel>
+                            </apex:column>
+                            <apex:column headerValue="Type">
+                                <apex:selectList value="{!productType}" size="1">
+                                    <apex:selectOptions value="{!typeOptions}"/>
+                                    <apex:actionSupport action="{!typeFilter}" reRender="itemTable, messages" event="onchange" status="typeStatus"/>
+                                </apex:selectList>
+                                <apex:outputPanel layout="block" style="float:right; width:20px; height:20px; padding-top:3px;">
+                                    <apex:actionStatus id="typeStatus">
+                                        <apex:facet name="start">
+                                            <apex:image value="{!$Resource.itemloader}"/>                                
+                                        </apex:facet>
+                                    </apex:actionStatus>
+                                </apex:outputPanel>
+                            </apex:column>
+                            <apex:column headerValue="Product">
+                                <apex:selectList value="{!productId}" size="1">
+                                    <apex:selectOptions value="{!productOptions}"/>
+                                    <apex:actionSupport action="{!selectProduct}" reRender="oppSection, itemTable, middlePanel, vacSection, receiptSection, messages" event="onchange" status="productStatus" oncomplete="replaceDate();"/>
+                                </apex:selectList>
+                                <apex:outputPanel layout="block" style="float:right; width:20px; height:20px; padding-top:3px;">
+                                    <apex:actionStatus id="productStatus">
+                                        <apex:facet name="start">
+                                            <apex:image value="{!$Resource.itemloader}"/>                                
+                                        </apex:facet>
+                                    </apex:actionStatus>
+                                </apex:outputPanel>
+                            </apex:column>
+                            <apex:column headerValue="Bedrooms" rendered="{!selectedProduct.Type__c != 'Land'}">{!selectedProduct.Bdr__c}</apex:column>
+                            <apex:column headerValue="Bathrooms" rendered="{!selectedProduct.Type__c != 'Land'}">{!selectedProduct.Bth__c}</apex:column>
+                            <apex:column headerValue="Car Parks" rendered="{!selectedProduct.Type__c != 'Land'}">{!selectedProduct.Car_Parks__c}</apex:column>
+                            <apex:column headerValue="Size" rendered="{!selectedProduct.Type__c != 'Land'}">{!selectedProduct.Size__c}</apex:column> 
+                            <apex:column headerValue="Frontage" rendered="{!selectedProduct.Type__c = 'Land'}">{!selectedProduct.Frontage__c}</apex:column>
+                            <apex:column headerValue="Depth" rendered="{!selectedProduct.Type__c = 'Land'}">{!selectedProduct.Depth__c}</apex:column>
+                            <apex:column headerValue="Lot Size" rendered="{!selectedProduct.Type__c = 'Land'}">{!selectedProduct.Size__c}</apex:column>    
+                            <apex:column headerValue="Land Price" rendered="{!selectedProduct.Contract_Type__c = 'Split Contract'}">
+                                <apex:outputText value="{0,number,$#,###.##}">
+                                    <apex:param value="{!selectedProduct.Land_Price__c}" /> 
+                                </apex:outputText>
+                            </apex:column>
+                            <apex:column headerValue="Build Price" rendered="{!selectedProduct.Contract_Type__c = 'Split Contract'}">
+                                <apex:outputText value="{0,number,$#,###.##}">
+                                    <apex:param value="{!selectedProduct.Build_Price__c}" /> 
+                                </apex:outputText>
+                            </apex:column>
+                            <apex:column headerValue="List Price">
+                                <apex:outputText value="{0,number,$#,###.##}">
+                                    <apex:param value="{!selectedProduct.List_Price__c}" /> 
+                                </apex:outputText>
+                            </apex:column>
+                        </apex:pageBlockTable>
+                    </apex:actionRegion>
+                </apex:pageblockSection>
+                <apex:pageBlockSection columns="2" id="middlePanel">
+                    <apex:outputpanel id="leftPanel" rendered="{!showResiDetails}">
+                        <apex:pageBlockSection columns="1" title="Reservation Details" collapsible="false">
+                            <apex:pageBlockSectionItem >
+                                <apex:outputLabel value="Purchaser" for="purchaser"/>
+                                <apex:outputPanel >
+                                    <div class = "requiredInput">
+                                        <div class = "requiredBlock"></div>
+                                        <apex:inputText value="{!Opportunity.Purchaser__c}" required="true" id="purchaser"/>
+                                        <script type="text/javascript"> var purchaser = document.getElementById('{!$Component.purchaser}');</script>
+                                        <apex:outputLink onclick="return updatePurchaser();">[{!Opportunity.Account.Salutation+' '}{!Opportunity.Account.Name}]</apex:outputLink>
+                                    </div>
+                                </apex:outputPanel>
+                            </apex:pageBlockSectionItem>
+                            <apex:inputField value="{!Opportunity.Reservation_Date__c}" required="true" id="resDate"/>
+                            <script type="text/javascript"> var resDate = document.getElementById('{!$Component.resDate}');</script>
+                            <apex:inputField value="{!Opportunity.Contract_Signing_Appointment_Date__c}" required="true" id="apptDate"/>
+                            <script type="text/javascript"> var apptDate = document.getElementById('{!$Component.apptDate}');</script>
+                            <apex:inputField value="{!Opportunity.Appointment_Start_Time__c}" required="true"/>
+                            <apex:inputField value="{!Opportunity.Appointment_End_Time__c}" required="true"/>
+                        </apex:pageBlockSection>
+                        
+                        <apex:pageBlockSection title="Conditions" collapsible="false" columns="1">
+                            <apex:outputPanel style="width:100%;">
+                                <script type="text/javascript">
+                                    //TODO: This code is really ugly. Please re-factor.
+                                    j$(document).ready(function(){
+                                    	enableDisable();
+									});
+                                        
+                                    j$(window).load(function(){
+                                    	var obj = j$(jq('{!$Component.noConditions}'));
+                                        if(obj.attr('checked')) {
+                                            noConditionsChecked = true;
+											j$('.chkGroup').each(function() {
+                								this.disabled = true; 
+                                                this.checked = false;  
+            								});
+                                                
+                                            j$('.textGroup').each(function() {
+                                            	this.disabled = true;
+                                                this.value = '';
+                                            });
+                                                
+                                            j$('.plusDate').bind('click', function(event){
+												event.preventDefault();
+											});
+        								} else {
+            								j$('.chkGroup').each(function() {
+                								this.disabled = false;     
+            								});   
+                                                
+                                            j$('.textGroup').each(function() {
+                                                this.disabled = false;
+                                            });
+                                            
+                                            j$('.plusDate').unbind('click');
+    									}   	 
+									});
+                                    
+                                    function enableDisable() {
+                                    	j$(jq('{!$Component.noConditions}')).click(function(event) {
+        									if(this.checked) {
+                                                noConditionsChecked = true;
+            									j$('.chkGroup').each(function() {
+                									this.disabled = true; 
+                                                    this.checked = false;  
+            									});
+                                                
+                                                j$('.textGroup').each(function() {
+                                                	this.disabled = true;
+                                                    this.value = '';
+                                                });
+                                                
+                                                j$('.plusDate').bind('click', function(event){
+													event.preventDefault();
+												});
+        									} else {
+            									j$('.chkGroup').each(function() {
+                									this.disabled = false;     
+            									});   
+                                                
+                                                j$('.textGroup').each(function() {
+                                                	this.disabled = false;
+                                                });
+                                                
+                                                j$('.plusDate').unbind('click');
+        									}
+    									});     
+                                    }    
+                                </script>
+                                <table style="width:100%;">
+                                    <tr>
+                                    	<td style="width:40%;"><apex:outputLabel value="Condition" style="font-weight:bold;"/></td>
+                                    	<td style="width:50%;"><apex:outputLabel value="Due Date" style="font-weight:bold;"/></td>
+                                    	<td style="width:10%;"><apex:outputLabel value="Satisfied" style="font-weight:bold;"/></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width:10%;">
+                                            <apex:inputCheckbox value="{!Opportunity.No_Conditions__c}" label="No Conditions" id="noConditions" styleClass="noCon"/>
+                                            <apex:outputLabel value="No Conditions" for="No_Conditions"/>
+                                        </td>        
+                                    </tr>
+                                    <tr>
+                                    	<td style="width:40%;">
+                                        	<apex:inputCheckbox value="{!Opportunity.Subject_to_Finance__c}" label="Subject to Finance" id="Subject_to_Finance" styleClass="chkGroup"/>
+                                            <apex:outputLabel value="Subject to Finance" for="Subject_to_Finance"/>
+                                        </td>
+                                        <td style="width:50%;">
+                                        	<apex:inputField value="{!Opportunity.Subject_to_Finance_Due_Date__c}" id="fdDate" styleClass="textGroup"/>
+                                            <script type="text/javascript"> var fdDate = document.getElementById('{!$Component.fdDate}');</script>
+                                    	</td>
+                                        <td style="width:10%;">
+                                            <apex:inputCheckbox value="{!Opportunity.Subject_to_Finance_Satisfied__c}" styleClass="chkGroup"/>
+                                        </td>
+                                	</tr>
+                                	<tr>
+                                        <td style="width:40%;">
+                                            <apex:inputCheckbox value="{!Opportunity.Subject_to_Soil_Test__c}" label="Subject to Soil Test" id="Subject_to_Soil_Test" styleClass="chkGroup"/>
+                                            <apex:outputLabel value="Subject to Soil Test" for="Subject_to_Soil_Test"/>
+                                        </td>
+                                    	<td style="width:50%;">
+                                        	<apex:inputField value="{!Opportunity.Subject_to_Soil_Test_Due_Date__c}" id="soilTestDate" styleClass="textGroup"/>
+                                        	<script type="text/javascript"> var soilTestDate = document.getElementById('{!$Component.soilTestDate}');</script>
+                                        </td>
+                                        <td style="width:10%;">
+                                            <apex:inputCheckbox value="{!Opportunity.Subject_to_Soil_Test_Satisfied__c}" styleClass="chkGroup"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                    	<td style="width:40%;">
+                                        	<apex:inputCheckbox value="{!Opportunity.Subject_to_Sale_of_Property__c}" label="Subject to Sale of Property" id="Subject_to_Sale_of_Property" styleClass="chkGroup"/>
+                                            <apex:outputLabel value="Subject to Sale of Property" for="Subject_to_Sale_of_Property"/>
+                                        </td>
+                                        <td style="width:50%;">
+                                        	<apex:inputField value="{!Opportunity.Subject_to_Sale_of_Property_Due_Date__c}" id="salePropertyDate" styleClass="textGroup"/>
+                                            <script type="text/javascript"> var salePropertyDate = document.getElementById('{!$Component.salePropertyDate}');</script>
+                                    	</td>
+                                    	<td style="width:10%;">
+                                        	<apex:inputCheckbox value="{!Opportunity.Subject_to_Sale_of_Property_Satisfied__c}" styleClass="chkGroup"/>
+                                    	</td>
+                                	</tr>
+                                	<tr>
+                                        <td style="width:40%;">
+                                            <apex:inputCheckbox value="{!Opportunity.Subject_to_FIRB__c}" label="Subject to FIRB" id="Subject_to_FIRB" styleClass="chkGroup"/>
+                                            <apex:outputLabel value="Subject to FIRB" for="Subject_to_FIRB"/>
+                                        </td>
+                                    	<td style="width:50%;">
+                                            <apex:inputField value="{!Opportunity.Subject_to_FIRB_Due_Date__c}" id="firbDueDate" styleClass="textGroup"/>
+                                            <script type="text/javascript"> var firbDueDate = document.getElementById('{!$Component.firbDueDate}');</script>
+                                        </td>
+                                        <td style="width:10%;">
+                                            <apex:inputCheckbox value="{!Opportunity.Subject_to_FIRB_Satisfied__c}" styleClass="chkGroup"/>
+                                        </td>
+                                        </tr>
+                                        <tr>
+                                        	<td style="width:40%;">
+                                            	<apex:inputCheckbox value="{!Opportunity.Conditions_Other__c}" label="Other" id="C_Other" styleClass="chkGroup"/>
+                                                <apex:outputLabel value="Other" for="C_Other"/>
+                                            </td>
+                                            <td style="width:50%;">
+                                            	<apex:inputField value="{!Opportunity.Conditions_Other_Due_Date__c}" id="otherDate" styleClass="textGroup"/>
+                                                <script type="text/javascript"> var otherDate = document.getElementById('{!$Component.otherDate}');</script>
+                                    		</td>
+                                            <td style="width:10%;">
+                                                <apex:inputCheckbox value="{!Opportunity.Conditions_Other_Satisfied__c}" styleClass="chkGroup"/>
+                                            </td>
+                                		</tr>
+                                		<tr>
+                                            <td style="width:40%;">
+                                                <apex:outputLabel value="Other Description:" for="C_Other_Desc"/>
+                                            </td>
+                                            <td style="width:50%;" colspan="2">
+                                                <apex:inputField value="{!Opportunity.Conditions_Other_Description__c}" id="C_Other_Desc" style="width:100%;" styleClass="textGroup"/>
+                                            </td>
+                                		</tr>
+                            	</table>
+                        	</apex:outputPanel>
+                        </apex:pageBlockSection>
+                        
+                        <apex:pageBlockSection columns="1" title="Upgrades" collapsible="false" id="upgrades" rendered="{!upgradeSize > 0}">
+                            <apex:actionRegion >
+                                <apex:dataTable value="{!upgradeList}" var="u" cellpadding="5">
+                                    <apex:column headerValue="Select" width="100">
+                                        <apex:inputCheckbox value="{!u.isSelected}">
+                                            <apex:actionSupport reRender="reservationSummary, upgrades" event="onchange" status="upgradeStatus" oncomplete="replaceDate();"/>
+                                        </apex:inputCheckbox>
+                                        <apex:outputPanel layout="block" style="float:right; width:20px; height:20px; padding-top:3px;">
+                                            <apex:actionStatus id="upgradeStatus">
+                                                <apex:facet name="start">
+                                                    <apex:image value="{!$Resource.itemloader}"/>                                
+                                                </apex:facet>
+                                            </apex:actionStatus>
+                                        </apex:outputPanel>
+                                    </apex:column>
+                                    <apex:column headerValue="Upgrade" width="200">{!u.product.Name}</apex:column>
+                                    <apex:column headerValue="Price">
+                                        <apex:outputText value="{0,number,$#,###.##}">
+                                            <apex:param value="{!u.price}" /> 
+                                        </apex:outputText>
+                                    </apex:column>
+                                </apex:dataTable>
+                            </apex:actionRegion>
+                        </apex:pageBlockSection>
+                        <apex:pageBlockSection columns="1" title="Options" collapsible="false" id="options" rendered="{!optionSize > 0}">
+                            <apex:actionRegion >
+                                <apex:dataTable value="{!optionList}" var="o" cellpadding="5">
+                                    <apex:column headerValue="Option" width="100">{!o.optionName}</apex:column>
+                                    <apex:column headerValue="Selection" width="200">
+                                        <apex:selectList value="{!o.productId}" size="1">
+                                            <apex:selectOptions value="{!o.productOptions}"/>
+                                            <apex:actionSupport event="onchange" action="{!o.findPrice}" reRender="reservationSummary, options" status="priceStatus" oncomplete="replaceDate();"/>
+                                        </apex:selectList>
+                                        <apex:outputPanel layout="block" style="float:right; width:20px; height:20px; padding-top:3px;">
+                                            <apex:actionStatus id="priceStatus">
+                                                <apex:facet name="start">
+                                                    <apex:image value="{!$Resource.itemloader}"/>                                
+                                                </apex:facet>
+                                            </apex:actionStatus>
+                                        </apex:outputPanel>
+                                    </apex:column>
+                                    <apex:column headerValue="Price" id="optionPrice">
+                                        <apex:outputText value="{0,number,$#,###.##}">
+                                            <apex:param value="{!o.price}" /> 
+                                        </apex:outputText>
+                                    </apex:column>
+                                </apex:dataTable>
+                            </apex:actionRegion>
+                        </apex:pageBlockSection>
+                    </apex:outputpanel>
+                    <apex:pageBlockSection columns="1" title="Reservation Summary" collapsible="false" rendered="{!showResiDetails}">
+                        <apex:outputPanel id="reservationSummary">
+                            <apex:actionRegion >
+                                <apex:outputPanel id="appartmentSummary" rendered="{!AND(productSelectionList[0].Product__r.Type__c = 'Apartment', productSelectionList[0].Product__r.Contract_Type__c != 'Split Contract')}">
+                                    <table style="width:400px;" id="reservationTable">
+                                        <tr>
+                                            <td style="font-weight:bold;">Property</td>
+                                            <td style="font-weight:bold; width:200px;">Price($)</td>
+                                        </tr>
+                                        <tr class="doubleMargin">
+                                            <td>{!productSelectionList[0].Product__r.Project__r.Name} - {!productSelectionList[0].Product__r.Name}</td>
+                                            <td>
+                                                <apex:outputText value="{0,number,$#,###.##}">
+                                                    <apex:param value="{!productSelectionList[0].Product__r.List_Price__c}" /> 
+                                                </apex:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="color:#696969; font-weight:bold;">
+                                                Add Options, Upgrades &amp; Variations (If Applicable)
+                                            </td>
+                                        </tr>
+                                            <apex:repeat value="{!combinedAdditions}" var="c">
+                                            <tr>
+                                                <td>
+                                                    {!c.addName}
+                                                </td>
+                                                <td>
+                                                    <apex:outputText value="{0,number,$#,###.##}">
+                                                        <apex:param value="{!c.addPrice}" /> 
+                                                    </apex:outputText>  
+                                                </td>
+                                            </tr>   
+                                        </apex:repeat>  
+                                        <tr class="noMargin">
+                                            <td colspan="2">
+                                                <hr />
+                                            </td>
+                                        </tr>
+                                        <tr class="noMargin">
+                                            <td>
+                                                Total Price
+                                            </td>
+                                            <td>
+                                                <apex:outputText value="{0,number,$#,###.##}">
+                                                    <apex:param value="{!productSelectionList[0].Product__r.List_Price__c+additionsTotal}" /> 
+                                                </apex:outputText>                                        
+                                            </td>
+                                        </tr> 
+                                        <tr>
+                                            <td colspan="2">
+                                                <hr />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="color:#696969; font-weight:bold;">
+                                                Less Discount (If Applicable)                                    
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Discount
+                                            </td>
+                                            <td>
+                                                <apex:inputText value="{!aptDiscount}" style="width:120px;">
+                                                    <apex:actionSupport reRender="reservationSummary, messages" event="onblur" status="discountStatus"/>
+                                                </apex:inputText>
+                                                <apex:outputPanel layout="block" style="float:right; width:20px; height:20px; padding-top:3px;">
+                                                    <apex:actionStatus id="discountStatus">
+                                                        <apex:facet name="start">
+                                                            <apex:image value="{!$Resource.itemloader}"/>                                
+                                                        </apex:facet>
+                                                    </apex:actionStatus>
+                                                </apex:outputPanel>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="border:2px solid; padding-top:10px; padding-left:5px; background-color:#FFD700;">
+                                                <table>
+                                                    <tr>
+                                                        <td style="font-size:1.2em; font-weight:bold; width:200px;">
+                                                            Contract Price
+                                                        </td>
+                                                        <td style="font-size:1.2em; font-weight:bold;" id="contractVal">
+                                                            <apex:outputText value="{0,number,$#,###.##}">
+                                                                <apex:param value="{!productSelectionList[0].Product__r.List_Price__c+additionsTotal-IF(Opportunity.Discount__c = null, 0, Opportunity.Discount__c)}" /> 
+                                                            </apex:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding-top:10px;">
+                                                Full Deposit Required
+                                            </td>
+                                            <td style="padding-top:10px;">
+                                                <div style="width:130px; float:left;">
+                                                <div class = "requiredInput">
+                                                    <div class = "requiredBlock"></div>
+                                                        <apex:inputText value="{!aptDeposit}" id="depositField" style="width:120px;"/>
+                                                    </div>
+                                                </div>
+                                                <apex:outputPanel layout="block" style="margin-left:5px; float:left;">
+                                                    <apex:outputLink onclick="return updateDeposit(5);" style="float:left; padding-top:3px;">[5%]</apex:outputLink>
+                                                </apex:outputPanel>
+                                                <apex:outputPanel layout="block" style="margin-left:5px; float:left;">
+                                                    <apex:outputLink onclick="return updateDeposit(10);" style="float:left; padding-top:3px;">[10%]</apex:outputLink>
+                                                </apex:outputPanel>
+                                                <script type="text/javascript">var deposit = document.getElementById('{!$Component.depositField}');</script>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="color:#696969; font-weight:bold;">
+                                                Less Rebate (If Applicable)
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                        <apex:outputPanel rendered="{!Opportunity.Rebate_Product__c != 0}">
+                                            <td>Product Rebate</td>
+                                            <td>
+                                            <apex:outputText value="{0,number,$#,###.##}">
+                                                <apex:param value="{!Opportunity.Rebate_Product__c}" /> 
+                                            </apex:outputText>                                    
+                                            </td>
+                                        </apex:outputPanel>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Rebate at Settlement
+                                            </td>
+                                            <td>
+                                                    <apex:inputText value="{!aptRebate}" style="width:120px;">
+                                                        <apex:actionSupport event="onblur" reRender="reservationSummary, messages" status="resStatus"/>
+                                                    </apex:inputText>
+                                                    <apex:outputPanel layout="block" style="float:right; width:20px; height:20px; padding-top:3px;">
+                                                        <apex:actionStatus id="resStatus">
+                                                            <apex:facet name="start">
+                                                                <apex:image value="{!$Resource.itemloader}"/>                                
+                                                            </apex:facet>
+                                                        </apex:actionStatus>
+                                                    </apex:outputPanel>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="border:2px solid; padding-top:10px; padding-left:5px; background-color:#FFD700;">
+                                                <table>
+                                                    <tr>
+                                                        <td style="font-size:1.2em; font-weight:bold; width:200px;">
+                                                            Net Price
+                                                        </td>
+                                                        <td style="font-size:1.2em; font-weight:bold;">
+                                                            <apex:outputText value="{0,number,$#,###.##}">
+                                                                <apex:param value="{!productSelectionList[0].Product__r.List_Price__c+additionsTotal-IF(Opportunity.Discount__c == null, 0, Opportunity.Discount__c)-IF(Opportunity.Rebate_Manual__c = null, 0, Opportunity.Rebate_Manual__c)-IF(Opportunity.Rebate_Product__c = null, 0, Opportunity.Rebate_Product__c)}" /> 
+                                                            </apex:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </apex:outputPanel>
+                                <apex:outputPanel id="landSummary" rendered="{!AND(productSelectionList[0].Product__r.Type__c = 'Land', productSelectionList[0].Product__r.Contract_Type__c != 'Split Contract')}">
+                                    <table style="width:400px;" id="landReservationTable">
+                                        <tr>
+                                            <td style="font-weight:bold;">Land</td>
+                                            <td style="font-weight:bold; width:200px;">Price($)</td>
+                                        </tr>
+                                        <tr class="doubleMargin">
+                                            <td>{!productSelectionList[0].Product__r.Project__r.Name} - {!productSelectionList[0].Product__r.Name}</td>
+                                            <td>
+                                                <apex:outputText value="{0,number,$#,###.##}">
+                                                    <apex:param value="{!productSelectionList[0].Product__r.List_Price__c}" /> 
+                                                </apex:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="color:#696969; font-weight:bold;">
+                                                Less Discount (If Applicable)                                    
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Discount
+                                            </td>
+                                            <td>
+                                                <apex:inputText value="{!landDiscount}" style="width:120px;">
+                                                    <apex:actionSupport reRender="reservationSummary, messages" event="onblur" status="landDiscountStatus"/>
+                                                </apex:inputText>
+                                                <apex:outputPanel layout="block" style="float:right; width:20px; height:20px; padding-top:3px;">
+                                                    <apex:actionStatus id="landDiscountStatus">
+                                                        <apex:facet name="start">
+                                                            <apex:image value="{!$Resource.itemloader}"/>                                
+                                                        </apex:facet>
+                                                    </apex:actionStatus>
+                                                </apex:outputPanel>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="border:2px solid; padding-top:10px; padding-left:5px; background-color:#FFD700;">
+                                                <table>
+                                                    <tr>
+                                                        <td style="font-size:1.2em; font-weight:bold; width:200px;">
+                                                            Contract Price
+                                                        </td>
+                                                        <td style="font-size:1.2em; font-weight:bold;" id="landContractVal">
+                                                            <apex:outputText value="{0,number,$#,###.##}">
+                                                                <apex:param value="{!productSelectionList[0].Product__r.List_Price__c-IF(Opportunity.Discount__c = null, 0, Opportunity.Discount__c)}" /> 
+                                                            </apex:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding-top:10px;">
+                                                Full Deposit Required
+                                            </td>
+                                            <td style="padding-top:10px;">
+                                                <div style="width:130px; float:left;">
+                                                <div class = "requiredInput">
+                                                    <div class = "requiredBlock"></div>
+                                                    <apex:inputText value="{!landDeposit}" id="landDepositField" style="width:120px;"/>
+                                                    </div>
+                                                </div>
+                                                <apex:outputPanel layout="block" style="margin-left:5px; float:left;">
+                                                    <apex:outputLink onclick="return landUpdateDeposit(5);" style="float:left; padding-top:3px;">[5%]</apex:outputLink>
+                                                </apex:outputPanel>
+                                                <apex:outputPanel layout="block" style="margin-left:5px; float:left;">
+                                                    <apex:outputLink onclick="return landUpdateDeposit(10);" style="float:left; padding-top:3px;">[10%]</apex:outputLink>
+                                                </apex:outputPanel>
+                                                <script type="text/javascript">var landDeposit = document.getElementById('{!$Component.landDepositField}');</script>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="color:#696969; font-weight:bold;">
+                                                Less Rebate (If Applicable)
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                        <apex:outputPanel rendered="{!Opportunity.Rebate_Product__c != 0}">
+                                            <td>Product Rebate</td>
+                                            <td>
+                                            <apex:outputText value="{0,number,$#,###.##}">
+                                                <apex:param value="{!Opportunity.Rebate_Product__c}" /> 
+                                            </apex:outputText>                                    
+                                            </td>
+                                        </apex:outputPanel>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Rebate at Settlement
+                                            </td>
+                                            <td>
+                                                <apex:inputText value="{!landRebate}" style="width:120px;">
+                                                    <apex:actionSupport event="onblur" reRender="reservationSummary, messages" status="landResStatus"/>
+                                                </apex:inputText>
+                                                <apex:outputPanel layout="block" style="float:right; width:20px; height:20px; padding-top:3px;">
+                                                    <apex:actionStatus id="landResStatus">
+                                                        <apex:facet name="start">
+                                                            <apex:image value="{!$Resource.itemloader}"/>                                
+                                                        </apex:facet>
+                                                    </apex:actionStatus>
+                                                </apex:outputPanel>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="border:2px solid; padding-top:10px; padding-left:5px; background-color:#FFD700;">
+                                                <table>
+                                                    <tr>
+                                                        <td style="font-size:1.2em; font-weight:bold; width:200px;">
+                                                            Net Price
+                                                        </td>
+                                                        <td style="font-size:1.2em; font-weight:bold;">
+                                                            <apex:outputText value="{0,number,$#,###.##}">
+                                                                <apex:param value="{!productSelectionList[0].Product__r.List_Price__c-IF(Opportunity.Discount__c == null, 0, Opportunity.Discount__c)-IF(Opportunity.Rebate_Manual__c = null, 0, Opportunity.Rebate_Manual__c)-IF(Opportunity.Rebate_Product__c = null, 0, Opportunity.Rebate_Product__c)}" /> 
+                                                            </apex:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </apex:outputPanel>
+                                <apex:outputPanel id="splitSummary" rendered="{!productSelectionList[0].Product__r.Contract_Type__c = 'Split Contract'}">
+                                    <table style="width:400px;" id="splitReservationTable">
+                                        <!-- First Part Land-->
+                                        <tr>
+                                            <td style="font-weight:bold;">Land</td>
+                                            <td style="font-weight:bold; width:200px;">Price($)</td>
+                                        </tr>
+                                        <tr class="doubleMargin">
+                                            <td>{!productSelectionList[0].Product__r.Project__r.Name} - {!productSelectionList[0].Product__r.Name} - Land</td>
+                                            <td>
+                                                <apex:outputText value="{0,number,$#,###.##}">
+                                                    <apex:param value="{!productSelectionList[0].Product__r.Land_Price__c}" /> 
+                                                </apex:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="color:#696969; font-weight:bold;">
+                                                Less Discount (If Applicable)                                    
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Discount
+                                            </td>
+                                            <td>
+                                                <apex:inputText value="{!splitLandDiscount}" style="width:120px;">
+                                                    <apex:actionSupport reRender="reservationSummary, messages" event="onblur" status="splitLandDiscountStatus"/>
+                                                </apex:inputText>
+                                                <apex:outputPanel layout="block" style="float:right; width:20px; height:20px; padding-top:3px;">
+                                                    <apex:actionStatus id="splitLandDiscountStatus">
+                                                        <apex:facet name="start">
+                                                            <apex:image value="{!$Resource.itemloader}"/>                                
+                                                        </apex:facet>
+                                                    </apex:actionStatus>
+                                                </apex:outputPanel>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="border:2px solid; padding-top:10px; padding-left:5px; background-color:#FFD700;">
+                                                <table>
+                                                    <tr>
+                                                        <td style="font-size:1.2em; font-weight:bold; width:200px;">
+                                                            Land - Contract Price
+                                                        </td>
+                                                        <td style="font-size:1.2em; font-weight:bold;" id="splitLandContractVal">
+                                                            <apex:outputText value="{0,number,$#,###.##}">
+                                                                <apex:param value="{!productSelectionList[0].Product__r.Land_Price__c-IF(Opportunity.Discount__c = null, 0, Opportunity.Discount__c)}" /> 
+                                                            </apex:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding-top:10px;">
+                                                Full Deposit Required - LAND
+                                            </td>
+                                            <td style="padding-top:10px;">
+                                                <div style="width:130px; float:left;">
+                                                <div class = "requiredInput">
+                                                    <div class = "requiredBlock"></div>
+                                                        <apex:inputText value="{!splitLandDeposit}" id="splitLandDepositField" style="width:120px;"/>
+                                                    </div>
+                                                </div>
+                                                <apex:outputPanel layout="block" style="margin-left:5px; float:left;">
+                                                    <apex:outputLink onclick="return splitLandUpdateDeposit(5);" style="float:left; padding-top:3px;">[5%]</apex:outputLink>
+                                                </apex:outputPanel>
+                                                <apex:outputPanel layout="block" style="margin-left:5px; float:left;">
+                                                    <apex:outputLink onclick="return splitLandUpdateDeposit(10);" style="float:left; padding-top:3px;">[10%]</apex:outputLink>
+                                                </apex:outputPanel>
+                                                <script type="text/javascript">var splitLandDeposit = document.getElementById('{!$Component.splitLandDepositField}');</script>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="color:#696969; font-weight:bold;">
+                                                Less Rebate (If Applicable)
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                        <apex:outputPanel rendered="{!Opportunity.Rebate_Product__c != 0}">
+                                            <td>Product Rebate</td>
+                                            <td>
+                                            <apex:outputText value="{0,number,$#,###.##}">
+                                                <apex:param value="{!Opportunity.Rebate_Product__c}" /> 
+                                            </apex:outputText>                                    
+                                            </td>
+                                        </apex:outputPanel>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Rebate at Settlement - Land
+                                            </td>
+                                            <td>                                       
+                                                <apex:inputText value="{!splitLandRebate}" style="width:120px;">
+                                                    <apex:actionSupport event="onblur" reRender="reservationSummary, messages" status="splitLandResStatus"/>
+                                                </apex:inputText>
+                                                <apex:outputPanel layout="block" style="float:right; width:20px; height:20px; padding-top:3px;">
+                                                    <apex:actionStatus id="splitLandResStatus">
+                                                        <apex:facet name="start">
+                                                            <apex:image value="{!$Resource.itemloader}"/>                                
+                                                        </apex:facet>
+                                                    </apex:actionStatus>
+                                                </apex:outputPanel>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="border:2px solid; padding-top:10px; padding-left:5px; background-color:#FFD700;">
+                                                <table>
+                                                    <tr>
+                                                        <td style="font-size:1.2em; font-weight:bold; width:200px;">
+                                                            Land - Net Price
+                                                        </td>
+                                                        <td style="font-size:1.2em; font-weight:bold;">
+                                                            <apex:outputText value="{0,number,$#,###.##}">
+                                                                <apex:param value="{!productSelectionList[0].Product__r.Land_Price__c-IF(Opportunity.Discount__c == null, 0, Opportunity.Discount__c)-IF(Opportunity.Rebate_Manual__c = null, 0, Opportunity.Rebate_Manual__c)-IF(Opportunity.Rebate_Product__c = null, 0, Opportunity.Rebate_Product__c)}" /> 
+                                                            </apex:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    <!-- Second Part Build-->
+                                        <tr>
+                                            <td style="font-weight:bold; padding-top:15px;">Build</td>
+                                            <td style="font-weight:bold; padding-top:15px;">Price($)</td>
+                                        </tr>
+                                        <tr class="doubleMargin">
+                                            <td>{!productSelectionList[0].Product__r.Project__r.Name} - {!productSelectionList[0].Product__r.Name} - Build</td>
+                                            <td>
+                                                <apex:outputText value="{0,number,$#,###.##}">
+                                                    <apex:param value="{!productSelectionList[0].Product__r.Build_Price__c}" /> 
+                                                </apex:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="color:#696969; font-weight:bold;">
+                                                Add Options, Upgrades &amp; Variations (If Applicable)
+                                            </td>
+                                        </tr>
+                                            <apex:repeat value="{!combinedAdditions}" var="c">
+                                            <tr>
+                                                <td>
+                                                    {!c.addName}
+                                                </td>
+                                                <td>
+                                                    <apex:outputText value="{0,number,$#,###.##}">
+                                                        <apex:param value="{!c.addPrice}" /> 
+                                                    </apex:outputText>  
+                                                </td>
+                                            </tr>   
+                                        </apex:repeat>  
+                                        <tr class="noMargin">
+                                            <td colspan="2">
+                                                <hr />
+                                            </td>
+                                        </tr>
+                                        <tr class="noMargin">
+                                            <td>
+                                                Total Price
+                                            </td>
+                                            <td>
+                                                <apex:outputText value="{0,number,$#,###.##}">
+                                                    <apex:param value="{!productSelectionList[0].Product__r.Build_Price__c+additionsTotal}" /> 
+                                                </apex:outputText>                                        
+                                            </td>
+                                        </tr> 
+                                        <tr>
+                                            <td colspan="2">
+                                                <hr />
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="color:#696969; font-weight:bold;">
+                                                Less Discount (If Applicable)                                    
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Discount
+                                            </td>
+                                            <td>
+                                                <apex:inputText value="{!splitBuildDiscount}" style="width:120px;">
+                                                    <apex:actionSupport reRender="reservationSummary, messages" event="onblur" status="splitBuildDiscountStatus"/>
+                                                </apex:inputText>
+                                                <apex:outputPanel layout="block" style="float:right; width:20px; height:20px; padding-top:3px;">
+                                                    <apex:actionStatus id="splitBuildDiscountStatus">
+                                                        <apex:facet name="start">
+                                                            <apex:image value="{!$Resource.itemloader}"/>                                
+                                                        </apex:facet>
+                                                    </apex:actionStatus>
+                                                </apex:outputPanel>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="border:2px solid; padding-top:10px; padding-left:5px; background-color:#1E90FF;">
+                                                <table>
+                                                    <tr>
+                                                        <td style="font-size:1.2em; font-weight:bold; width:200px;">
+                                                            Build - Contract Price
+                                                        </td>
+                                                        <td style="font-size:1.2em; font-weight:bold;" id="splitBuildContractVal">
+                                                            <apex:outputText value="{0,number,$#,###.##}">
+                                                                <apex:param value="{!productSelectionList[0].Product__r.Build_Price__c+additionsTotal-IF(Opportunity.Discount_Build__c = null,0,Opportunity.Discount_Build__c)}" /> 
+                                                            </apex:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding-top:10px;">
+                                                Full Deposit Required - BUILD
+                                            </td>
+                                            <td style="padding-top:10px;">
+                                                <div style="width:130px; float:left;">
+                                                    <div class = "requiredInput">
+                                                        <div class = "requiredBlock"></div>
+                                                        <apex:inputText value="{!splitBuildDeposit}" id="splitBuildDepositField" style="width:120px;"/>
+                                                    </div>
+                                                </div>
+                                                <apex:outputPanel layout="block" style="margin-left:5px; float:left;">
+                                                    <apex:outputLink onclick="return splitBuildUpdateDeposit(5);" style="float:left; padding-top:3px;">[5%]</apex:outputLink>
+                                                </apex:outputPanel>
+                                                <apex:outputPanel layout="block" style="margin-left:5px; float:left;">
+                                                    <apex:outputLink onclick="return splitBuildUpdateDeposit(10);" style="float:left; padding-top:3px;">[10%]</apex:outputLink>
+                                                </apex:outputPanel>
+                                                <script type="text/javascript">var splitBuildDeposit = document.getElementById('{!$Component.splitBuildDepositField}');</script>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="color:#696969; font-weight:bold;">
+                                                Less Rebate (If Applicable)
+                                            </td>
+                                        </tr>
+                                        <!-- No Land  - Product Rebate Section -->
+                                        <tr>
+                                            <td>
+                                                Rebate at Settlement - Land
+                                            </td>
+                                            <td>
+                                                    <apex:inputText value="{!splitBuildRebate}" style="width:120px;">
+                                                        <apex:actionSupport event="onblur" reRender="reservationSummary, messages" status="splitBuildResStatus"/>
+                                                    </apex:inputText>
+                                                    <apex:outputPanel layout="block" style="float:right; width:20px; height:20px; padding-top:3px;">
+                                                        <apex:actionStatus id="splitBuildResStatus">
+                                                            <apex:facet name="start">
+                                                                <apex:image value="{!$Resource.itemloader}"/>                                
+                                                            </apex:facet>
+                                                        </apex:actionStatus>
+                                                    </apex:outputPanel>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" style="border:2px solid; padding-top:10px; padding-left:5px; background-color:#1E90FF;">
+                                                <table>
+                                                    <tr>
+                                                        <td style="font-size:1.2em; font-weight:bold; width:200px;">
+                                                            Build - Net Price
+                                                        </td>
+                                                        <td style="font-size:1.2em; font-weight:bold;">
+                                                            <apex:outputText value="{0,number,$#,###.##}">
+                                                                <apex:param value="{!productSelectionList[0].Product__r.Build_Price__c+additionsTotal-IF(Opportunity.Discount_Build__c == null, 0, Opportunity.Discount_Build__c)-IF(Opportunity.Rebate_Manual_Build__c = null, 0, Opportunity.Rebate_Manual_Build__c)}" /> 
+                                                            </apex:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </apex:outputPanel>
+                            </apex:actionRegion>  
+                        </apex:outputPanel>           
+                    </apex:pageBlockSection>
+                </apex:pageBlockSection>
+                <apex:outputPanel id="vacSection">
+                    <apex:pageBlockSection columns="1" title="Variations" rendered="{!AND(selectedProduct != null, showResiDetails)}">
+                        <apex:outputPanel layout="block">
+                            <apex:commandButton value="Add Variation" action="{!addVariation}" immediate="true" reRender="vacSection, messages" rendered="{!productSelectionList[0].Product__r.Type__c != 'Land'}" oncomplete="disablePicklists();"/>
+                            <!--apex:commandButton value="Add Condition" action="{!addCondition}" immediate="true" reRender="vacSection, messages" oncomplete="disablePicklists();"/-->
+                        </apex:outputPanel>
+                        <apex:actionRegion >
+                            <apex:pageBlockTable value="{!vacListFiltered}" var="v" >
+                                <apex:column headerValue="Title">
+                                    <apex:outputText value="{!v.vac.Name}" rendered="{!v.isEditable = false}"/>
+                                    <div class = "requiredInput">
+                                        <div class = "requiredBlock"></div>
+                                        <apex:inputField value="{!v.vacNew.Name}" rendered="{!v.isEditable = true}"/>
+                                    </div>
+                                    <apex:outputText rendered="{!AND(v.nameError, v.isEditable)}" style="color:red;" value="Title Required."></apex:outputText>
+                                </apex:column>
+                                <!--
+                                <apex:column headerValue="Type">
+                                    <apex:outputField value="{!v.vac.Type__c}" rendered="{!v.isEditable = false}"/>
+                                    <apex:inputField value="{!v.vacNew.Type__c}" rendered="{!v.isEditable = true}" styleClass="disabledPicklist"/>
+                                    <apex:outputText rendered="{!AND(v.typeError, v.isEditable)}" style="color:red;" value="Type Required."></apex:outputText>
+                                </apex:column>
+                                <apex:column headerValue="Condition Type">
+                                    <apex:outputField value="{!v.vac.Condition_Type__c}" rendered="{!AND(v.isEditable = false, v.vac.Type__c ='Condition')}"/>
+                                    <div class = "requiredInput">
+                                        <div class = "requiredBlock"></div>
+                                        <apex:inputField value="{!v.vacNew.Condition_Type__c}" rendered="{!AND(v.isEditable = true, v.vacNew.Type__c ='Condition')}"/>
+                                    </div>
+                                    <apex:outputText rendered="{!AND(v.conditionTypeError, v.isEditable)}" style="color:red; size:.7em;" value="Condition Type Required."></apex:outputText>
+                                </apex:column>
+                                <apex:column headerValue="Initial Expiry">
+                                    <apex:outputField value="{!v.vac.Initial_Expiry_Date__c}" rendered="{!AND(v.isEditable = false, v.vac.Type__c ='Condition')}"/>
+                                    <div class = "requiredInput">
+                                        <div class = "requiredBlock"></div>
+                                        <apex:inputField value="{!v.vacNew.Initial_Expiry_Date__c}" rendered="{!AND(v.isEditable = true, v.vacNew.Type__c ='Condition')}"/>
+                                    </div>
+                                    <apex:outputText rendered="{!AND(v.initialExpiryError, v.isEditable)}" style="color:red; size:.7em;" value="Initial Expiry Date Required."></apex:outputText>
+                                </apex:column>
+                                <apex:column headerValue="Extension Days">
+                                    <apex:outputField value="{!v.vac.Extension_Days__c}" rendered="{!AND(v.isEditable = false, v.vac.Type__c ='Condition')}"/>
+                                    <apex:inputField value="{!v.vacNew.Extension_Days__c}" rendered="{!AND(v.isEditable = true, v.vacNew.Type__c ='Condition')}"/>
+                                </apex:column>
+                                -->
+                                <apex:column headerValue="Price">
+                                    <apex:outputText value="{0,number,$#,###.##}" rendered="{!AND(v.isEditable = false,v.vac.Price__c != null, v.vac.Type__c !='Condition')}">
+                                        <apex:param value="{!v.vac.Price__c}" /> 
+                                    </apex:outputText>
+                                    <div class = "requiredInput">
+                                        <div class = "requiredBlock"></div>
+                                        <apex:inputField value="{!v.vacNew.Price__c}" rendered="{!AND(v.isEditable = true, v.vacNew.Type__c !='Condition')}"/>
+                                    </div>
+                                    <apex:outputText rendered="{!AND(v.priceError, v.isEditable)}" style="color:red; size:.7em;" value="Price Required."></apex:outputText>
+                                </apex:column>
+                                <!--
+                                <apex:column headerValue="Due Date">
+                                    <apex:outputText value="{!DAY(v.vac.Condition_Due_Date__c)}/{!MONTH(v.vac.Condition_Due_Date__c)}/{!YEAR(v.vac.Condition_Due_Date__c)}" rendered="{!AND(v.vac.Condition_Due_Date__c != null, v.isEditable = false, v.vac.Type__c !='Variation')}"/>
+                                    <div class = "requiredInput">
+                                        <div class = "requiredBlock"></div>
+                                        <apex:inputField value="{!v.vacNew.Condition_Due_Date__c}" rendered="{!AND(v.isEditable = true, v.vacNew.Type__c !='Variation')}"/>
+                                    </div>
+                                    <apex:outputText rendered="{!AND(v.dateError, v.isEditable)}" style="color:red;" value="Date Required."></apex:outputText>
+                                </apex:column>
+                                -->
+                                <apex:column headerValue="Status">
+                                    <apex:outputText value="{!v.vac.Status__c}" rendered="{!v.isEditable = false}"/>
+                                    <div class = "requiredInput">
+                                        <div class = "requiredBlock"></div>
+                                        <apex:inputField value="{!v.vacNew.Status__c}" rendered="{!v.isEditable = true}"/>
+                                    </div>
+                                    <apex:outputText rendered="{!AND(v.statusError, v.isEditable)}" style="color:red;" value="Status Required."></apex:outputText>
+                                </apex:column>
+                                <apex:column headerValue="Description">
+                                    <apex:outputText value="{!v.vac.Description__c}" rendered="{!v.isEditable = false}"/>
+                                    <div class = "requiredInput">
+                                        <div class = "requiredBlock"></div>
+                                        <apex:inputText value="{!v.vacNew.Description__c}" rendered="{!v.isEditable = true}" size="40"/>
+                                    </div>
+                                    <apex:outputText rendered="{!AND(v.descriptionError, v.isEditable)}" style="color:red;" value="Description Required."></apex:outputText>
+                                </apex:column>
+                                <apex:column headerValue="Action">
+                                    <apex:commandLink value="Edit" action="{!v.editVac}" rendered="{!v.isEditable = false}" reRender="vacSection"/> &nbsp;
+                                    <apex:commandLink value="Del" action="{!v.deleteVac}" onclick="if(!confirm('Are you sure you wish to delete this record?')) return false;" rendered="{!v.isEditable = false}" reRender="vacSection, reservationSummary" oncomplete="replaceDate();"/>
+                                    <apex:commandButton value="Ok" action="{!v.saveVac}" rendered="{!v.isEditable = true}" reRender="vacSection, reservationSummary" oncomplete="replaceDate();"/>
+                                    <apex:commandButton value="Cancel" action="{!v.cancelVac}" rendered="{!v.isEditable = true}" reRender="vacSection" immediate="true"/>
+                                </apex:column>
+                            </apex:pageBlockTable>
+                        </apex:actionRegion>
+                    </apex:pageBlockSection>
+                </apex:outputPanel>
+                <apex:outputPanel id="receiptSection">
+                    <apex:pageBlockSection columns="1" title="Receipts" id="receipts" rendered="{!AND(selectedProduct != null, showResiDetails)}">
+                        <apex:outputPanel layout="block">
+                            <apex:commandButton value="Add New Transaction" immediate="true" action="{!addNewReceipt}" reRender="receipts"/>
+                        </apex:outputPanel>
+                            <apex:actionRegion >
+                                <apex:outputPanel rendered="{!showNewReceipts}">
+                                    <apex:pageBlockTable value="{!newReceiptsActual}" var="n">
+                                        <apex:column headerValue="Date">
+                                            <apex:inputField value="{!n.receipt.Date__c}" required="true"/>
+                                        </apex:column>
+                                        <apex:column headerValue="Amount">
+                                            <apex:inputField value="{!n.receipt.Amount__c}" required="true"/>
+                                        </apex:column>
+                                        <apex:column headerValue="Method">
+                                            <apex:inputField value="{!n.receipt.Payment_Method__c}" required="true"/>
+                                        </apex:column>
+                                        <apex:column headerValue="Description">
+                                            <div class="requiredInput">
+                                                <div class="requiredBlock"></div>
+                                                <apex:selectList size="1" value="{!n.receipt.Description__c}">
+                                                    <apex:selectOptions value="{!n.receiptTypes}"/>
+                                                </apex:selectList>
+                                                <apex:outputPanel rendered="{!n.typeError}" layout="block" styleClass="errorMsg"><strong>Error:</strong> You must enter a value</apex:outputPanel>
+                                            </div>
+                                        </apex:column>
+                                        <apex:column headerValue="Received From">
+                                            <apex:inputField value="{!n.receipt.Received_From__c}" required="true"/>
+                                        </apex:column>
+                                        <apex:column headerValue="Receipted By">
+                                            <apex:inputField value="{!n.receipt.Receipted_By__c}" />
+                                        </apex:column>
+                                        <!--<apex:column headerValue="Trust A/C Receipt #">
+                                            <apex:inputField value="{!n.receipt.Trust_A_C_Receipt__c}"/>
+                                        </apex:column>
+                                        <apex:column headerValue="Customer Ref">
+                                            <apex:inputField value="{!n.receipt.Customer_Ref__c}"/>
+                                        </apex:column>-->
+                                        <apex:column headerValue="3rd Party Transaction">
+                                            <apex:inputField value="{!n.receipt.X3rd_Party_Transaction__c}"/>
+                                        </apex:column>
+                                        <apex:column headerValue="Action">
+                                            <apex:commandButton action="{!n.recordReceipt}" value="Ok" reRender="receipts" oncomplete="disablePicklists();"/>
+                                            <apex:commandButton action="{!n.cancel}" value="Cancel" immediate="true" reRender="receipts" oncomplete="disablePicklists();"/>
+                                        </apex:column>
+                                    </apex:pageBlockTable>
+                                </apex:outputPanel>
+                            </apex:actionRegion>
+                            <apex:pageBlockTable value="{!receipts}" var="r">
+                            <apex:column value="{!r.Date__c}" headerValue="Date"/>
+                            <apex:column headerValue="Amount">
+                                <apex:outputText value="{0,number,$#,###.##}">
+                                    <apex:param value="{!r.Amount__c}" /> 
+                                </apex:outputText>
+                            </apex:column>
+                            <apex:column value="{!r.Payment_Method__c}" headerValue="Method"/>
+                            <!--<apex:column value="{!r.Customer_Ref__c}" headerValue="Customer Ref"/>-->
+                            <apex:column value="{!r.X3rd_Party_Transaction__c}" headerValue="3rd Party Transaction"/>
+                            <!--<apex:column value="{!r.Trust_A_C_Receipt__c}" headerValue="Trust A/C Receipt #"/>-->
+                            <apex:column value="{!r.Description__c}" headerValue="Description"/>
+                            <apex:column value="{!r.Received_From__c}" headerValue="Received From"/> 
+                            <apex:column value="{!r.Receipted_By__c}" headerValue="Receipted By"/>
+                            <apex:column headerValue="Reconciled">
+                                <apex:outputField value="{!r.Reconciled__c}"/>
+                            </apex:column>
+                        </apex:pageBlockTable>  
+                        <apex:outputPanel style="font-weight:bold;" rendered="{!productSelectionList[0].Product__r.Contract_Type__c != 'Split Contract'}"><apex:outputText value="Total:" style="margin-right:10px;"/><apex:outputText value="{0,number,$#,###.##}"><apex:param value="{!receiptTotal}"/></apex:outputText></apex:outputPanel>
+                        <apex:outputPanel style="font-weight:bold;" rendered="{!productSelectionList[0].Product__r.Contract_Type__c = 'Split Contract'}">
+                            <apex:outputText value="Land Total:" style="margin-right:10px;"/><apex:outputText value="{0,number,$#,###.##}">
+                                <apex:param value="{!receiptTotal}"/>
+                            </apex:outputText>
+                            <br />
+                            <apex:outputText value="Build Total:" style="margin-right:10px;"/><apex:outputText value="{0,number,$#,###.##}">
+                                <apex:param value="{!receiptTotalBuild}"/>
+                            </apex:outputText>    
+                        </apex:outputPanel>
+                    </apex:pageBlockSection>
+                </apex:outputPanel>
+                <apex:pageBlockSection columns="1">
+                    <apex:pageBlock title="Previous Property Selections">
+                        <apex:pageBlockTable value="{!previousList}" var="p">
+                            <apex:column headerValue="Product">{!p.Product__r.Name}</apex:column>
+                            <apex:column headerValue="Selection Status">{!p.Selection_Status__c}</apex:column>
+                            <apex:column headerValue="Reservation Date">
+                                <apex:outputField value="{!p.Reservation_Date__c}"/>
+                            </apex:column>
+                            <apex:column headerValue="Last Modified">
+                                <apex:outputField value="{!p.LastModifiedDate}" />
+                            </apex:column>
+                        </apex:pageBlockTable>
+                    </apex:pageBlock>
+                </apex:pageBlockSection>
+                <apex:actionFunction action="{!saveSelections}" name="saveSelectionsBottom" status="saveStatusBottom" reRender="thePage"/>
+                <apex:pageBlockButtons location="bottom">
+                    <apex:actionStatus id="saveStatusBottom">
+                        <apex:facet name="start"><apex:commandButton value="Save" disabled="true"/></apex:facet>
+                        <apex:facet name="stop"><apex:commandButton value="Save" onclick="validate('bottom'); return false;"/></apex:facet>
+                    </apex:actionStatus>
+                    <apex:commandButton value="Exit" action="{!exit}" immediate="true" onclick="return confirm('Are you sure you wish to exit? Any unsaved changes will be lost!');"/>
+                    <apex:commandButton value="Make a Reservation" action="{!MakeReservation}" immediate="true" rendered="{!showResiDetails = false}"/>
+                </apex:pageBlockButtons>
+            </apex:pageBlock>
+        </apex:form>
+    </apex:outputPanel>
+</apex:outputPanel>
+</apex:page>

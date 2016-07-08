@@ -1,0 +1,109 @@
+<apex:component controller="chequePreviewController" allowDML="true">
+	<apex:attribute name="objJournalAtt" type="Journal__c" assignTo="{!objJournalParam}" description="A journal object to create Journal Data" />
+	<apex:attribute name="journalIDsAtt" type="string" assignTo="{!journalIDs}" description="A comma separated list of Journal IDs" />
+	<apex:attribute name="isPDFAtt" type="boolean" assignTo="{!isPDF}" description="The PDF mode attribute" required="true" />
+	
+    <apex:stylesheet value="{!URLFOR($Resource.elrte, 'css/smoothness/jquery-ui-1.8.13.custom.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.elrte, 'css/elrte.min.css')}"/>
+    
+    <apex:includeScript value="{!URLFOR($Resource.elrte, 'js/jquery-1.6.1.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.elrte, 'js/jquery-ui-1.8.13.custom.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.elrte, 'js/elrte.full.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.elrte, 'js/i18n/elrte.en.js')}"/>
+    
+	<head>
+		<style type="text/css">
+			.tableBorder
+			{
+				border:1px solid black;
+			}
+			@page
+			{
+	            size: letter;
+	            margin: 25mm;
+	        }
+	        .page-break
+	        {
+	            display:block;
+	            page-break-after:always;
+	        }
+	        body
+	        {
+	            font-family: Arial Unicode MS;
+	        }
+	        .textAreaClass
+	        {
+	        }
+		</style>
+		<script type="text/javascript">
+			var j$ = jQuery.noConflict();
+			var textAreas = new Array();
+			var counter = -1;
+			j$(document).ready(function() 
+			{
+				var bodyObject = window.frames[0].document.getElementsByClassName('cke_show_borders')[0];
+				if(bodyObject!=null)
+				{
+					j$(bodyObject).bind('keypress',function(event)
+					{
+						if(bodyObject.scrollHeight > 504)
+						{
+							alert('You have exceeded allowed number of lines for the cheque.');
+							event.preventDefault();
+							return false;
+						}
+					});
+				}
+			});
+		</script>
+	</head>
+	<apex:repeat value="{!listCustomJournals}" var="objCustomJournal" id="JournalRepeater">
+		
+		<div class="page-break" style="position:relative; width:650px; background:white; height:900px; text-align:center; display:block; page-break-after: {!IF(objCustomJournal.journalCount == journalCounter, 'avoid','always')};">
+			
+			<div style="position:relative; top:125px; width:500px; text-align: left; margin: 0px auto 0px auto;">
+				<apex:inputTextarea value="{!objCustomJournal.objJournal.Cheque_Text__c}" id="richTextChequeText" 
+					rows="24" cols="80" style="height:500px;" rendered="{!NOT(isPDFAtt)}" styleClass="textAreaClass" richText="true" />
+				<apex:outputText value="{!objCustomJournal.objJournal.Cheque_Text__c}" rendered="{!isPDFAtt}" escape="false" />
+			</div>
+			
+			<!-- height:280px; -->
+			<div style="position:{!IF(isPDFAtt,'absolute; left:50px;','relative;')} bottom:0px; width:600px; height:280px; margin: 0px auto 0px auto; ">
+			
+				<div style="position:absolute;left:0px;top:185px; font-size:10px; font-weight:900px; ">
+					<table cellspacing="0" cellpadding="0" margin="0" width="440px">
+						<tr>
+							<td class="tableBorder" colspan="7" width="440px" style="{!IF(isPDFAtt, 'display:none;', '')}">THE SUM OF DOLLARS</td>
+						</tr>
+						<tr>
+							<td class="tableBorder" style="{!IF(isPDFAtt, 'display:none;', '')}">HUNDRED THOUS</td>
+							<td class="tableBorder" style="{!IF(isPDFAtt, 'display:none;', '')}">TEN THOUS</td>
+							<td class="tableBorder" style="{!IF(isPDFAtt, 'display:none;', '')}">THOUSANDS</td>
+							<td class="tableBorder" style="{!IF(isPDFAtt, 'display:none;', '')}">HUNDREDS</td>
+							<td class="tableBorder" style="{!IF(isPDFAtt, 'display:none;', '')}">&nbsp;&nbsp;TENS&nbsp;&nbsp;</td>
+							<td class="tableBorder" style="{!IF(isPDFAtt, 'display:none;', '')}">&nbsp;&nbsp;UNITS&nbsp;&nbsp;</td>
+							<td class="tableBorder" style="{!IF(isPDFAtt, 'display:none;', '')}">CENTS</td>
+						</tr>
+						<tr>
+							<apex:repeat value="{!objCustomJournal.listNumberWords}" var="stringWord" id="ChequeValueRepeater">
+								<td class="tableBorder" height="50px" style="font-size:12px;">{!stringWord}</td>
+							</apex:repeat>
+						</tr>
+					</table>
+				</div>
+				
+				<div style="position:absolute;left:525px;top:155px; font-size:12px;">
+					{!objCustomJournal.FormatedDate}
+				</div>
+				
+				<div style="position:absolute;left:520px;top:240px; font-size:14px; font-weight:900px;">
+					{!objCustomJournal.RoundedAmount}
+				</div>
+				
+				<div style="position:absolute;left:180px;top:290px; font-size:14px; font-weight:900px;">
+					{!objCustomJournal.NameOfAccount}
+				</div>
+			</div>
+		</div>
+	</apex:repeat>
+</apex:component>

@@ -1,0 +1,4 @@
+<apex:page standardController="Project__c"
+tabStyle="Project__c" extensions="StandardController">
+   <c:MediaItemCreation isProduct="false" isProject="true" stdController="{!stdController}" /> 
+</apex:page>

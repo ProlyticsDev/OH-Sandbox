@@ -1,0 +1,5 @@
+<apex:page renderAs="PDF" showHeader="false" standardStyleSheets="false">
+    <apex:form >
+        <c:chequePreviewComponent journalIDsAtt="{!$CurrentPage.Parameters.journalIDs}" isPDFAtt="true" />
+    </apex:form>
+</apex:page>

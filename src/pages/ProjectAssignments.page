@@ -1,0 +1,65 @@
+<apex:page controller="OppProjectAssignExt" tabStyle="Opportunity">
+	<style type="text/css"> 
+        input.btn[name="del"] {
+            display: none;
+        }
+ 		input.btn[name="clone"] {
+            display: none;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-2.2.3.min.js" />
+	<script type="text/javascript">
+		$(function(){
+			hideDisq();
+		});	
+		function hideDisq(){
+			$(".sts option[value='Disqualified']").hide();
+		}	
+	</script>
+	<apex:form >
+		<apex:actionFunction name="afStatusChange" reRender="rsn"/>
+		<apex:pageBlock title="Current Projects" id="prjList">
+			<apex:pageMessages />
+			<apex:pageBlockButtons location="top">
+				<apex:commandButton value="Edit Projects" action="{!Edit}" rendered="{!canEdit}" reRender="prjList" oncomplete="hideDisq();"/>
+				<apex:commandButton value="Save" action="{!Save}" rendered="{!NOT(canEdit)}" reRender="prjList,selPrj"/>
+				<apex:commandButton value="Cancel" action="{!Cancel}" rendered="{!NOT(canEdit)}" reRender="prjList"/>
+			</apex:pageBlockButtons>
+			
+			<apex:pageBlockTable columns="8" value="{!currentProjects}" var="pa">				
+				<apex:column headerValue="View Details">
+					<apex:commandLink value="{!pa.Name}" reRender="selPrj">
+						<apex:param name="paId" value="{!pa.Id}" assignTo="{!selectedProjectId}"/>
+					</apex:commandLink>
+				</apex:column>
+				<apex:column headerValue="Project" value="{!pa.Project__c}"/>	
+				<apex:column headerValue="Status">
+					<apex:outputField styleClass="outField" value="{!pa.Status__c}" rendered="{!canEdit}"/>
+					<apex:inputField styleClass="inField sts" value="{!pa.Status__c}" rendered="{!NOT(canEdit)}"/>
+				</apex:column>		
+				<apex:column headerValue="Disqualified Reason">
+					<apex:outputField styleClass="outField" value="{!pa.Reason__c}" rendered="{!canEdit}"/>
+					<apex:inputField styleClass="inField" value="{!pa.Reason__c}" rendered="{!NOT(canEdit)}"/>
+				</apex:column>		
+				<apex:column headerValue="Disqualified Details">
+					<apex:outputField styleClass="outField" value="{!pa.Disqualified_Reason_Detail__c}" rendered="{!canEdit}"/>
+					<apex:inputField styleClass="inField" value="{!pa.Disqualified_Reason_Detail__c}" rendered="{!NOT(canEdit)}"/>
+				</apex:column>		
+				<apex:column headerValue="Primary">
+					<apex:outputField styleClass="outField" value="{!pa.Primary__c}" rendered="{!canEdit}" />
+					<apex:inputField styleClass="inField" value="{!pa.Primary__c}" rendered="{!NOT(canEdit)}" />
+				</apex:column>		
+				<apex:column headerValue="Client Enquiry" value="{!pa.Client_Enquiry__c}"/>
+				<apex:column headerValue="Manager Approved" value="{!pa.Manager_Approval__c}"/>				
+			</apex:pageBlockTable>
+
+		</apex:pageBlock>
+
+		<apex:pageBlock title="Selected Project Detail" id="selPrj">
+			<apex:detail subject="{!selectedProjectId}" title="false" relatedList="true" inlineEdit="true" />
+		</apex:pageBlock>
+
+
+	</apex:form>	
+
+</apex:page>

@@ -1,0 +1,130 @@
+<apex:component >
+
+    <apex:attribute name="Num" type="string"  description="Number of the Entity" default="1" />
+    <apex:attribute name="SectionHeader" type="string"  description="Section Title" />
+    <apex:attribute name="Prefix" type="string"  description="Label Prefix" />
+    <apex:attribute name="Comm" type="CommissionData"  description="Label Prefix" />
+    <apex:attribute name="AllowEdit" type="boolean"  description="Allow Edit" />
+    <apex:attribute name="VA" type="Vendor_Authority__c" description="VA" />
+
+    <apex:pageblocksection columns="2" collapsible="true" title="{!SectionHeader} (GST{!IF(comm.hasGST,'',' Exempt')})" id="DetailSection">
+        <apex:pageblocksectionitem >
+            <apex:outputlabel >{!prefix} OH Account</apex:outputlabel>
+            <apex:inputfield value="{!Comm.Payment_1.Account__c}" />
+        </apex:pageblocksectionitem>
+
+        <apex:pageblocksectionitem >
+            <apex:outputlabel >P1 Payment Trigger</apex:outputlabel>
+            <apex:inputfield value="{!Comm.Payment_1.Payment_Stage__c}" />
+        </apex:pageblocksectionitem>
+
+        <apex:pageblocksectionitem >
+            <apex:outputlabel >{!prefix} OH Account Invoice To:</apex:outputlabel>
+            <apex:inputfield value="{!Comm.Payment_1.Commission_Invoice_To__c}" style="width:100%" />
+        </apex:pageblocksectionitem>
+
+        <apex:pageblocksectionitem >
+            <apex:outputlabel >P1 Payment Percentage</apex:outputlabel>
+            <apex:inputfield value="{!Comm.Payment_1.Payment_Percentage__c}" id="PercP1" style="width:60px" onchange="Update{!Comm.FuncName}(this);" />
+        </apex:pageblocksectionitem>
+
+        <apex:pageblocksectionitem >
+            <apex:outputlabel >{!prefix} Build Commission (ex GST)</apex:outputlabel>
+            <apex:outputpanel >
+                <apex:inputfield value="{!Comm.Payment_1.Total_Commission_Amount__c}" id="Amount" style="width:60px" onchange="Update{!Comm.FuncName}(this);" />
+            </apex:outputpanel>
+        </apex:pageblocksectionitem>
+
+        <apex:pageblocksectionitem >
+            <apex:outputlabel >P1 Payment Amount inc GST</apex:outputlabel>
+            <apex:outputpanel >
+                <apex:outputfield value="{!Comm.Payment_1.Amount__c}" id="AmountP1" title="{!Comm.Payment_1.Category__c}" />
+                <apex:inputhidden value="{!Comm.Payment_1.Amount__c}" id="AmountP1H" />
+            </apex:outputpanel>
+        </apex:pageblocksectionitem>
+
+        <apex:pageblocksectionitem >
+            <apex:outputlabel >{!prefix} Build Commission GST</apex:outputlabel>
+            <apex:outputField value="{!Comm.Payment_1.GST__c}" id="GST"/>
+        </apex:pageblocksectionitem>
+
+        <apex:pageblocksectionitem >
+            <apex:outputlabel >P1 Payment Date</apex:outputlabel>
+            <apex:inputfield value="{!Comm.Payment_1.Due_Date__c}" />
+        </apex:pageblocksectionitem>
+        
+        <apex:pageblocksectionitem >
+            <apex:outputlabel >Admin Fee</apex:outputlabel>
+            <apex:outputpanel >
+                <apex:outputfield value="{!VA.Admin_Fee__c}" id="Admin" />
+            </apex:outputpanel>
+        </apex:pageblocksectionitem>
+
+
+        <apex:pageblocksectionitem />
+
+        <apex:pageblocksectionitem >
+            <apex:outputlabel >{!prefix} TOTAL Commission (inc GST)</apex:outputlabel>
+            <apex:outputtext value="{0, number, $###,##0.00}" id="Total">
+                <apex:param value="{!Comm.Payment_1.Total_Commission_Amount__c + Comm.Payment_1.GST__c + Comm.Payment_2.GST__c}" />
+            </apex:outputtext> 
+        </apex:pageblocksectionitem>
+        
+        
+        <apex:pageblocksectionitem >
+            <apex:outputlabel >P2 Payment Trigger</apex:outputlabel>
+            <apex:inputfield value="{!Comm.Payment_2.Payment_Stage__c}" />
+        </apex:pageblocksectionitem>
+
+        <apex:pageblocksectionitem />
+        <apex:pageblocksectionitem >
+            <apex:outputlabel >P2 Payment Percentage</apex:outputlabel>
+            <apex:outputpanel >
+                <apex:outputfield value="{!Comm.Payment_2.Payment_Percentage__c}" id="PercP2T" />
+                <apex:inputhidden value="{!Comm.Payment_2.Payment_Percentage__c}" id="PercP2" />
+            </apex:outputpanel>
+        </apex:pageblocksectionitem>
+
+        <apex:pageblocksectionitem />
+        <apex:pageblocksectionitem >
+            <apex:outputlabel >P2 Payment Amount</apex:outputlabel>
+            <apex:outputpanel >
+                <apex:outputtext value="{0, number, $###,##0.00}" id="AmountP2" title="{!Comm.Payment_1.Category__c}">
+                    <apex:param value="{!comm.Payment_2.Amount__c}" />
+                </apex:outputtext>
+                <apex:inputhidden value="{!Comm.Payment_2.Amount__c}" id="AmountP2H" />
+            </apex:outputpanel>
+        </apex:pageblocksectionitem>
+
+
+        <apex:pageblocksectionitem rendered="{!Comm.IsNew}" />
+        <apex:pageblocksectionitem rendered="{!Not(Comm.IsNew)}">
+            <apex:outputlabel >Amount Change Reason</apex:outputlabel>
+            <apex:inputtext value="{!Comm.ChangeReason}" style="width:90%" />
+        </apex:pageblocksectionitem>
+
+        <apex:pageblocksectionitem >
+            <apex:outputlabel >P2 Payment Date</apex:outputlabel>
+            <apex:inputfield value="{!Comm.Payment_2.Due_Date__c}" />
+        </apex:pageblocksectionitem>
+
+        
+        <apex:outputpanel title="Oliver Hume">
+            <apex:inputhidden value="{!Comm.Payment_1.Amount_Excl__c}" id="AmountP1Exc" />
+            <apex:inputhidden value="{!Comm.Payment_2.Amount_Excl__c}" id="AmountP2Exc" />
+            <apex:inputhidden value="{!Comm.Payment_1.Category__c}" id="HidCat" />
+            <apex:inputhidden value="{!Comm.HasGST}" id="GSTCalc" />
+            <apex:inputHidden value="{!VA.Commission_Based_On__c}" id="GSTInclusive"/>
+        </apex:outputpanel>
+
+        <script type="text/javascript">
+            function Update{!Comm.FuncName}(ele){
+                UpdateAmount('{!$Component.DetailSection}',ele);
+            }
+            Update{!Comm.FuncName}();
+        </script>
+
+
+</apex:pageBlockSection>
+
+</apex:component>

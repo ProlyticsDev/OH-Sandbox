@@ -1,0 +1,7 @@
+<apex:component >
+<apex:attribute name="Opportunity" type="Opportunity" description="Opportunity" />
+
+
+
+
+</apex:component>

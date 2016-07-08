@@ -1,0 +1,24 @@
+<apex:component controller="CommissionList_Controller">
+<apex:attribute name="coms" type="CommissionModel"  description="A List of Commission of the category" assignTo="{!ComModel}"/>
+<apex:attribute name="Category" type="string"  description="Current Category" AssignTo="{!TheCategory}" />
+<apex:attribute name="AccountId" type="string"  description="Account Id" AssignTo="{!OHAccount}" />
+<apex:attribute name="OpportunityId" type="string"  description="Opportunity Id" AssignTo="{!ParentOpportunity}" />
+<apex:attribute name="OppId" type="Opportunity" description="Opportunity" AssignTo="{!opp}" />
+<apex:attribute name="VA" type="Vendor_Authority__c" description="VA" />
+
+<apex:outputPanel id="theForm" rendered="{!AND(NOT(ISNULL(TheCategory)),ShowCategory)}">
+
+<apex:pageblock title="{!SectionHeader}" html-style="box-shadow: 3px 3px 5px #888888;" >
+    <apex:pageblockButtons location="bottom" rendered="{!coms.CanAdd}">
+        <apex:commandButton value="New {!ShortName}" rerender="theForm" action="{!Add}" immediate="true" />
+    </apex:pageblockButtons>
+    
+    
+    <apex:repeat value="{!coms.Commissions}" var="comm" id="CategoryCommissions">
+        <c:CommissionDetail Commission="{!comm}" Category="{!TheCategory}" VA="{!VA}" IsApartment="{!IsApartment}" />
+    </apex:repeat>
+    
+</apex:pageblock>
+</apex:outputPanel>
+
+</apex:component>

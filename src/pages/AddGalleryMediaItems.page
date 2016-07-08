@@ -1,0 +1,10 @@
+<apex:page controller="MediaAddGalleryItems">
+ <apex:form > 
+ 	<p>Select the files you want to upload against this project. Click done to return to the project detail page.</p>
+ 	
+ 
+ <apex:iframe src="http://www-new-staging.oliverhume.com.au/FileUpload/Multiple?id={!objectId}&fileCategory=Marketing Materials&fileType=Project Images" scrolling="true"/>
+
+<apex:commandButton value="Done" action="{!done}" /> 
+</apex:form>
+</apex:page>

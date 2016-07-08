@@ -1,0 +1,38 @@
+<apex:page standardController="Campaign" extensions="CampaignExtnController" docType="html-5.0">
+<script>
+	function backToCampaign(){
+		window.location = '/{!Campaign.Id}';
+	}
+	function delCamp(idx){
+		afDelCamp(idx);
+	}
+</script>
+<apex:form >
+	<apex:actionFunction name="afDelCamp" action="{!deleteCampaign}" reRender="chidCamps">
+		<apex:param name="idx" value="" assignTo="{!delIndex}"/>
+	</apex:actionFunction>
+	<apex:pageMessages id="msg" />
+	<apex:pageBlock id="mngCamps" title="Manage Campaigns for {!Campaign.Name}">
+		<apex:outputLabel value="Number of Child Campaigns : " />&nbsp;&nbsp;
+		<apex:inputText value="{!childCampCount}" />&nbsp;&nbsp;
+		<apex:commandButton value="Create / Update" action="{!MangeCampaigns}" reRender="chidCamps,msg" />
+	</apex:pageBlock>
+	<apex:pageBlock id="chidCamps" title="Child Campaigns">
+		<apex:pageBlockButtons location="Top">
+			<apex:commandButton value="Update Campaigns" action="{!UpdateChildCampaigns}"/>	
+			<apex:commandButton value="Back To Campaign" onclick="backToCampaign();return false;" />	
+		</apex:pageBlockButtons>		
+		<apex:pageBlockTable value="{!childCampaigns}" var="cmp">
+			<apex:column headerValue="Campaign Name">
+				<apex:inputField value="{!cmp.camp.Name}" style="width:100%" />
+			</apex:column>
+			<apex:column headerValue="Start Date"><apex:inputField value="{!cmp.camp.StartDate}" required="true" /></apex:column>
+			<apex:column headerValue="End Date"><apex:inputField value="{!cmp.camp.EndDate}" required="true" /></apex:column>
+			<apex:column headerValue="Actual Cost"><apex:inputField value="{!cmp.camp.ActualCost}" required="true"/></apex:column>
+			<apex:column headerValue="Action">
+				<apex:commandLink value="Delete" onclick="afDelCamp({!cmp.index});return false;" />
+			</apex:column>
+		</apex:pageBlockTable>
+	</apex:pageBlock>
+</apex:form>	
+</apex:page>

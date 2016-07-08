@@ -1,0 +1,55 @@
+<apex:component Controller="CommissionDetailController">
+    <apex:attribute name="Commission" type="CommissionData"  description="Commission__c and Label information" AssignTo="{!CommData}" />
+    <apex:attribute name="Category" type="string"  description="Current Category" AssignTo="{!TheCategory}" />
+    <apex:attribute name="VA" type="Vendor_Authority__c" description="VA" />
+    <apex:attribute name="IsApartment" type="boolean" description="Is commission for Appartment" default="false"/>
+
+    <c:OHEntityCommissionDetail Num="{!CommData.Num}" 
+        ShowExtraInfo="{! CommData.Num =='1'}" 
+        Comm="{!CommData}"  
+        Prefix="{!LabelPrefix}" 
+        SectionHeader="{!SectionHeader}" 
+        rendered="{!TheCategory=='oliver hume'}"
+        AllowEdit="true"
+        VA="{!VA}"
+        IsApartment="{!IsApartment}"
+        />
+    
+    <c:SalesConsultantCommissionDetail Num="{!CommData.Num}" 
+        Comm="{!CommData}"  
+        Prefix="{!LabelPrefix}" 
+        ShowExtraInfo="true" 
+        SectionHeader="{!SectionHeader}" 
+        rendered="{!TheCategory=='staff'}" 
+        AllowEdit="true" 
+        VA="{!VA}"
+        IsApartment="{!IsApartment}"
+        />
+    
+    <c:ChannelCommissionDetail Num="{!CommData.Num}"
+        Comm="{!CommData}"  
+        Prefix="{!LabelPrefix}" 
+        SectionHeader="{!SectionHeader}" 
+        rendered="{!TheCategory=='channel'}" 
+        AllowEdit="true" 
+        VA="{!VA}"
+        IsApartment="{!IsApartment}"
+        />
+    
+    <c:ManagementCommissionDetail Num="{!CommData.Num}"
+        Comm="{!CommData}"  
+        Prefix="{!LabelPrefix}" 
+        SectionHeader="{!SectionHeader}" 
+        rendered="{!TheCategory=='management'}" 
+        AllowEdit="true" 
+        VA="{!VA}"/>
+    
+    <c:HouseCommissionFromBuilderDetail Num="{!CommData.Num}"
+        Comm="{!CommData}"  
+        Prefix="{!LabelPrefix}" 
+        SectionHeader="{!SectionHeader}" 
+        rendered="{!TheCategory=='house'}" 
+        AllowEdit="true" 
+        VA="{!VA}"/>
+            
+</apex:component>

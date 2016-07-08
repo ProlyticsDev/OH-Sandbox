@@ -1,0 +1,182 @@
+<apex:page standardController="Opportunity" recordSetVar="opportunities" extensions="createJournalTransactionsExtension" showHeader="true" sidebar="false" action="{!process}">
+    <style type="text/css">
+    .pbTitle {
+        white-space: nowrap
+    }
+</style>
+    <apex:sectionHeader title="Section 24"/>
+    
+    <apex:form id="frm">
+        <apex:pageMessages />
+        <apex:pageBlock id="wizard1" rendered="{!(transactionsSize == 0)}">
+            <apex:pageBlockButtons >
+                <apex:commandButton action="{!cancel}" value="Cancel"/>
+                <apex:commandButton action="{!generatePayments}" value="Next" disabled="{!(opportunitiesSize == 0)  || hasErrors}"/>
+            </apex:pageBlockButtons>
+            
+            <apex:outputPanel >
+                <apex:repeat value="{!receipts}" var="keyTA">
+                    <apex:outputPanel title="{!keyTA.Name}" id="theBlock">
+                        <apex:outputText ><b>Trust Account:</b> {!keyTA.Name}</apex:outputText>
+                        <apex:pageBlockTable value="{!receipts[keyTA]}" var="listItem">
+                            <apex:column >
+                                <apex:inputCheckbox value="{!listItem.checked}"/>
+                            </apex:column>             
+                            <apex:column headerValue="Creditor Ledger">
+                                <apex:outputLink value="/{!listItem.creditor_ledger.Id}" target="_blank">{!listItem.creditor_ledger.Name}</apex:outputLink>
+                            </apex:column>
+                            <apex:column headerValue="Opportunity Name">
+                                <apex:outputLink value="/{!listItem.opportunity.Id}" target="_blank">{!listItem.opportunity.Name}</apex:outputLink>
+                            </apex:column>
+                            <apex:column value="{!listItem.opportunity.Full_Deposit_Required__c}" headerValue="Full Deposit Required"/>
+                            <apex:column value="{!listItem.opportunity.Balance_Of_Deposit__c}"/>
+                            <apex:column value="{!listItem.opportunity.Ledger_Balance_Correct__c}"/>
+                            <apex:column value="{!listItem.opportunity.Funds_to_Retain_v2__c}"/>
+                            <apex:column value="{!listItem.opportunity.Available_Funds_to_Transfer_v2__c}"/>
+                            <apex:column headerValue="Journal Amount">
+                                <apex:inputText value="{!listItem.journal_amount}" />
+                            </apex:column>
+                        </apex:pageBlockTable>                     
+                        <br/>
+                    </apex:outputPanel>
+                    <br/><br/>
+                </apex:repeat>
+            </apex:outputPanel>
+        </apex:pageBlock>
+        
+        <div align="center" draggable="false" >
+        <apex:outputPanel rendered="{!(transactionsSize > 0 && !fromPageTwo)}">
+        <apex:commandButton action="{!cancel}" value="Cancel" />
+                <apex:commandButton action="{!back}" value="Back To Journals" />
+                <apex:commandButton action="{!create}" value="Create Payments" onclick="return confirm('Are you sure you want to create payments and journals for selected records?\nIMPORTANT: This operation cannot be undone.');"/>
+        </apex:outputPanel>
+        </div>
+        <br/>
+         <apex:repeat value="{!transactions2}" var="keyTA">
+        <apex:pageBlock id="wizard2" rendered="{!(transactionsSize > 0 && !fromPageTwo)}" title="Trust Account: {!keyTA.trustAccount.Name}">
+            <apex:outputPanel >
+               
+                    <apex:outputPanel title="{!keyTA.trustAccount.Name}" id="theBlockWizard2">
+                        <!--<apex:outputText ><b>Trust Account:</b> {!keyTA.trustAccount.Name}</apex:outputText><br/>-->
+                            <b>ABA Reference: </b><apex:inputText value="{!keyTA.abaReference}" required="true" id="ABA_Reference"/>   
+                        <br/><br/>
+                            <apex:pageBlockTable value="{!transactions2[keyTA]}" var="payment">
+                                <apex:column headerValue="Select">
+                                    <apex:inputCheckbox value="{!payment.checked}"/>
+                                </apex:column> 
+                                
+                                <apex:column headerValue="Creditor Ledger" style="width:279px">
+                                    <apex:outputLink value="/{!payment.creditorLedger.Id}" target="_blank">{!payment.creditorLedger.Name}</apex:outputLink>
+                                </apex:column>
+                                <apex:column headerValue="Amount">
+                                    <apex:outputText value="{0, number, $###,###,###,##0.00}">
+                                        <apex:param value="{!payment.sumAmount}" />
+                                    </apex:outputText>
+                                </apex:column>
+                                <!--apex:column value="{!payment.paymentMethod}" headerValue="Method"/-->
+                                <apex:column headerValue="Method">
+                                    <apex:selectList value="{!payment.paymentMethod}" multiselect="false" size="1" disabled="{!(payment.paymentMethod == 'Cheque')}">
+                                        <apex:selectOptions value="{!payment.paymentMethods}"/>
+                                    </apex:selectList>
+                                </apex:column>
+                                <apex:column headerValue="Bank Account">
+                                    <apex:outputLink value="/{!payment.bankAccountId}" target="_blank">{!payment.bankAccountName}</apex:outputLink>
+                                </apex:column>
+                                <apex:column headerValue="Reference">
+                                    <apex:inputText value="{!payment.reference}"/>    
+                                </apex:column>
+                                <apex:column breakBefore="true" colspan="5">
+                                    <!--apex:pageblocksection title="Journals" showheader="true" columns="1"-->
+                                        <apex:pageBlockTable value="{!payment.journals}" var="journal">
+                                            <apex:column headerValue="Opportunity Name" style="width:334px">
+                                                <apex:outputLink value="/{!journal.opportunityId}" target="_blank">{!journal.opportunityName}</apex:outputLink>
+                                            </apex:column>
+                                            <apex:column value="{!journal.journal.Amount__c}" headerValue="Journal Amount">
+                                                <apex:facet name="footer">
+                                                    <apex:outputText value="{0, number, $###,###,###,##0.00}" style="font-weight: bold;">
+                                                        <apex:param value="{!payment.sumAmount}" />
+                                                    </apex:outputText>
+                                                </apex:facet>
+                                            </apex:column>
+                                            <apex:column headerValue="Project">
+                                                <apex:outputLink value="/{!journal.projectId}" target="_blank">{!journal.projectName}</apex:outputLink>
+                                            </apex:column>
+                                            <apex:column headerValue="Product">
+                                                <apex:outputLink value="/{!journal.productId}" target="_blank">{!journal.productName}</apex:outputLink>
+                                            </apex:column>
+                                        </apex:pageBlockTable>
+                                    <!--/apex:pageblocksection-->
+                                </apex:column>
+                            </apex:pageBlockTable>               
+                    </apex:outputPanel>
+                    <br/>
+               
+            </apex:outputPanel>    
+        </apex:pageBlock>
+              </apex:repeat>
+                <div align="center" draggable="false" >
+        <apex:outputPanel rendered="{!(transactionsSize > 0 && !fromPageTwo)}">
+        <apex:commandButton action="{!cancel}" value="Cancel" />
+                <apex:commandButton action="{!back}" value="Back To Journals" />
+                <apex:commandButton action="{!create}" value="Create Payments" onclick="return confirm('Are you sure you want to create payments and journals for selected records?\nIMPORTANT: This operation cannot be undone.');"/>
+        </apex:outputPanel>
+        </div>
+        
+        <apex:pageBlock id="wizard3" rendered="{!(transactionsSize > 0  && fromPageTwo)}">
+            <apex:pageBlockButtons >
+                <apex:commandButton action="{!generateAccountSales}" value="Generate Account Sales"/>
+            </apex:pageBlockButtons>
+            
+            <apex:outputPanel >
+                <apex:outputText >All Journal and Payment records have been successfully created. Please review summary information below.</apex:outputText>
+                <br/><br/>
+                <apex:repeat value="{!transactions2}" var="keyTA">
+                    <apex:outputPanel title="Trust Account: {!keyTA.trustAccount.Name}" id="theBlockWizard3">
+                        <apex:pageblocksection title="{!keyTA.trustAccount.Name}" showheader="true" columns="4" collapsible="true">
+                            <table class="list">
+                                <thead class="rich-table-thead">
+                                    <tr class="headerRow">
+                                        <th class="headerRow" scope="col" colspan="1"><div>Records</div></th>
+                                        <th class="headerRow" scope="col" colspan="1"><div>Qty</div></th>
+                                        <th class="headerRow" scope="col" colspan="1"><div>$</div></th>
+                                        <th class="headerRow" scope="col" colspan="1"><div>Links</div></th>
+                                        
+                                    </tr>
+                                </thead>
+                                <tr class="dataRow">
+                                    <td class="dataCell" colspan="1"><span>Journals Created</span></td>
+                                    <td class="dataCell" colspan="1"><span>{!keyTA.journals.size}</span></td>
+                                    <td class="dataCell" colspan="1"><span>${!keyTA.totalJournalAmount}</span></td>
+                                    <td class="dataCell" colspan="1"><span></span></td>
+                                    <td class="dataCell" colspan="1"><span></span></td>
+                                </tr>
+                                
+                                <tr class="dataRow">
+                                    <td class="dataCell" colspan="1"><span>EFT Payments Created</span></td>
+                                    <td class="dataCell" colspan="1"><span>{!keyTA.eftPayments.size}</span></td>
+                                    <td class="dataCell" colspan="1"><span>${!keyTA.totalEftAmount}</span></td>
+                                    <td class="dataCell" colspan="1"><a href="{!keyTA.aBAUrl}" id="abafile" target="_blank">Download ABA File</a></td>
+                                    <td class="dataCell" colspan="1"><apex:repeat value="{!keyTA.eftPayments}" var="eftPayment"><a href="/{!eftPayment.Id}" target="_blank">[{!eftPayment.Id}]</a></apex:repeat></td>
+                                </tr>
+                                <tr class="dataRow">
+                                    <td class="dataCell" colspan="1"><span>Cheque Payments Created</span></td>
+                                    <td class="dataCell" colspan="1"><span>{!keyTA.chequePayments.size}</span></td>
+                                    <td class="dataCell" colspan="1"><span>${!keyTA.totalChequeAmount}</span></td>
+                                    <td class="dataCell" colspan="1"><a href="/a06?fcf=00B90000009l4Qg" id="abafile" target="_blank">Cheques to Prepare List View</a></td>
+                                    <td class="dataCell" colspan="1"><apex:repeat value="{!keyTA.chequePayments}" var="chequePayment"><a href="/{!chequePayment.Id}" target="_blank">[{!chequePayment.Id}]</a> </apex:repeat></td>
+                                </tr>
+                                <tr class="dataRow">
+                                    <td class="dataCell" colspan="1"><span>Total Payments Created</span></td>
+                                    <td class="dataCell" colspan="1"><span><b>{!(keyTA.chequePayments.size + keyTA.eftPayments.size)}</b></span></td>
+                                    <td class="dataCell" colspan="1"><span><b>${!(keyTA.totalEftAmount + keyTA.totalChequeAmount)}</b></span></td>
+                                    <td class="dataCell" colspan="1"><span></span></td>
+                                    <td class="dataCell" colspan="1"><span></span></td>
+                                </tr>
+                            </table>   
+                        </apex:pageblocksection>
+                    </apex:outputPanel>
+                </apex:repeat>
+            </apex:outputPanel>    
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

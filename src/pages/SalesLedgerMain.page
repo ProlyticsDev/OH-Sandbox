@@ -1,0 +1,18 @@
+<apex:page standardController="Opportunity" extensions="SaleLedgerReportGeneratorControllerMain" sidebar="false" >
+    <apex:form id="form">
+        <apex:outputPanel id="main">
+            <apex:pageBlock title="Sale Ledger Report">
+                <apex:pageBlockButtons >
+                    <apex:commandButton action="{!saveSaleLedgerReport}" value="Save Report"/>
+                    <apex:commandButton action="{!cancel}" value="Close"/>
+                </apex:pageBlockButtons>
+                
+                <apex:outputPanel id="output" >
+                    <apex:iframe width="100%" id="pageResult" src="{!reportIFrameUrl}" height="600px" ></apex:iframe>
+                </apex:outputPanel>
+                
+            </apex:pageBlock>
+        </apex:outputPanel>
+    </apex:form>
+    
+</apex:page>

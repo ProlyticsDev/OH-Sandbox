@@ -1,0 +1,3 @@
+<apex:page standardController="Competitor_Project__c" recordSetVar="competitorProjects" tabStyle="Competitor_Project__c" extensions="StandardController" standardStylesheets="false">
+    <c:MediaItemCreation isProduct="false" isProject="false" isCompProj="true" stdSetController="{!stdSetController}" /> 
+</apex:page>

@@ -1,0 +1,69 @@
+<apex:page standardController="Receipt__c" showHeader="false" sidebar="false" standardStylesheets="false" renderAs="pdf">
+    <head>
+        <apex:stylesheet value="{!URLFOR($Resource.TrustAccountReceipts, 'style.css')}"/>
+    </head>
+
+    <table width="100%">
+        <tr>
+            <td width="50%">
+                <img src="{!URLFOR($Resource.TrustAccountReceipts, 'logo.png')}"/>
+                <p> 
+                    <apex:outputText value="{!Receipt__c.Product__r.Project__r.OH_Account__r.Name}"/><br/>
+                    <apex:outputText value="{!Receipt__c.Product__r.Project__r.OH_Account__r.BillingStreet}"/><br/>
+                    <apex:outputText value="{!Receipt__c.Product__r.Project__r.OH_Account__r.BillingCity}    {!Receipt__c.Product__r.Project__r.OH_Account__r.BillingState}    {!Receipt__c.Product__r.Project__r.OH_Account__r.BillingPostalCode}"/><br/>
+                    <apex:outputText value="Tel: {!Receipt__c.Product__r.Project__r.OH_Account__r.Phone}    Fax: {!Receipt__c.Product__r.Project__r.OH_Account__r.Fax}"/><br/>
+                    <apex:outputText value="ACN {!Receipt__c.Product__r.Project__r.OH_Account__r.ACN__c}"/><br/>
+                    <apex:outputText value="ABN {!Receipt__c.Product__r.Project__r.OH_Account__r.ABN__c}"/><br/> 
+                </p>
+            </td>
+            <td width="50%">
+                <h2>Trust Account Receipt</h2>
+                <h1>
+                    <apex:outputText value="{!IF($CurrentPage.parameters.duplicate == '1', 'Duplicate', 'Original')}"/>
+                </h1>
+                <h3><apex:outputField value="{!Receipt__c.Trust_Account_Receipt_Number__r.TA_Receipt_Number__c}"/></h3>
+            </td>
+        </tr>
+        <tr class="spacer">
+            <td></td>
+            <td>
+                <apex:panelGrid columns="2" styleClass="details">
+                    <apex:outputText value="Date:"/><apex:outputField value="{!Receipt__c.Date__c}"/>
+                    <apex:outputText value="Number:"/><apex:outputField value="{!Receipt__c.Trust_Account_Receipt_Number__r.TA_Receipt_Number__c}"/>
+                    <apex:outputText value="Method:"/><apex:outputField value="{!Receipt__c.Payment_Method__c}"/>
+                </apex:panelGrid>
+            </td>
+        </tr>
+        <tr class="spacer">
+            <td>
+                <apex:panelGrid columns="2" styleClass="details">
+                    <apex:outputText value="Payee:"/><apex:outputText value="{!Receipt__c.Received_From__c}"/>
+                </apex:panelGrid>
+            </td>
+            <td>
+                <apex:panelGrid columns="2" styleClass="details">
+                    <apex:outputText value="Property:"/><apex:outputText value="{!Receipt__c.Product__r.Address__c}"/>
+                    <apex:outputText value="Reference:"/><apex:outputField value="{!Receipt__c.Transaction_ID_Reference__c}"/>
+                </apex:panelGrid>
+            </td>
+        </tr>
+        <tr class="spacer">
+            <td>
+                <apex:panelGrid columns="2" styleClass="details">
+                    <apex:outputText value="Description:"/><apex:outputText value="{!Receipt__c.Description__c}"/>
+                    <apex:outputText value="Amount:"/><apex:outputField value="{!Receipt__c.Amount__c}"/>
+                    <apex:outputText value="Total Amount Paid:"/><apex:outputField value="{!Receipt__c.Credit_Amount__c}"/>
+                    <apex:outputText value="Recieved on behalf of:"/><apex:outputField value="{!Receipt__c.Trust_Account__r.Name}"/>
+                </apex:panelGrid>
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>
+                <apex:outputText value="Signature:"/><apex:outputText value=" ____________________"/><br/>
+                <apex:outputText value="{!$User.LastName}, {!$User.FirstName}"/>
+            </td>
+            <td></td>
+        </tr>
+    </table>    
+</apex:page>

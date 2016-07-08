@@ -1,0 +1,99 @@
+<apex:page standardController="Receipt__c" showHeader="false" sidebar="false" standardStylesheets="false" renderAs="pdf">
+    <head>
+        <apex:stylesheet value="{!URLFOR($Resource.TrustAccountReceipts, 'style.css')}"/>
+    </head>
+    <apex:image width="100%" height="100%" style="position: fixed;background-repeat:repeat;left: 0cm; top:0cm; z-index:-999; opacity=10;" rendered="{!Receipt__c.Trust_Account_Receipt_Status__c == 'Cancelled'}" value="{!URLFOR($Resource.TrustAccountReceipts, 'cancelled.png')}"/>
+    
+    <table width="100%">
+        <tr>
+            <td width="50%">
+                <img src="{!URLFOR($Resource.TrustAccountReceipts, 'logo.png')}"/>
+                <p> 
+                    <apex:outputText value="{!Receipt__c.Product__r.Project__r.OH_Account__r.Name}"/><br/>
+                    <apex:outputText value="{!Receipt__c.Product__r.Project__r.OH_Account__r.BillingStreet}"/><br/>
+                    <apex:outputText value="{!Receipt__c.Product__r.Project__r.OH_Account__r.BillingCity}    {!Receipt__c.Product__r.Project__r.OH_Account__r.BillingState}    {!Receipt__c.Product__r.Project__r.OH_Account__r.BillingPostalCode}"/><br/>
+                    <apex:outputText value="Tel: {!Receipt__c.Product__r.Project__r.OH_Account__r.Phone}    Fax: {!Receipt__c.Product__r.Project__r.OH_Account__r.Fax}"/><br/>
+                    <apex:outputText value="ABN {!Receipt__c.Product__r.Project__r.OH_Account__r.ABN__c}"/><br/> 
+                </p>
+            </td>
+            <td width="50%" style="text-align: right;">
+                <h2>Trust Account Receipt</h2>
+                <h1>
+                    <apex:outputText value="{!IF($CurrentPage.parameters.duplicate == '1', 'Duplicate', 'Original')}"/>
+                </h1>
+                <h3><apex:outputText value="{!$CurrentPage.parameters.num}"/></h3>
+            </td>
+        </tr>
+        <tr class="spacer">
+            <td></td>
+            <td>
+                <apex:panelGrid columns="2" styleClass="details" style="text-align: right;">
+                    <apex:outputText value="Date:"/><apex:outputField value="{!Receipt__c.Date__c}"/>
+                    <apex:outputText value="Number:"/><apex:outputText value="{!$CurrentPage.parameters.num}"/>
+                    <apex:outputText value="Method:"/><apex:outputField value="{!Receipt__c.Payment_Method__c}"/>
+                    <apex:outputText value="Reference:"/><apex:outputField value="{!Receipt__c.Opportunity__r.Customer_Reference__c}"/>
+                </apex:panelGrid>
+            </td>
+        </tr>
+    </table>
+    <table width="75%">
+        <tr class="spacer">
+            <td>
+                <apex:panelGrid columns="2" styleClass="details">
+                    <apex:outputText value="Payer:"/><apex:outputText value="{!Receipt__c.Received_From__c}"/>
+                </apex:panelGrid>
+            </td>
+        </tr>
+        <tr class="spacer">
+            <td>
+                <apex:panelGrid columns="2" styleClass="details">
+                    <apex:outputText value="Lot:"/><apex:outputText value="{!Receipt__c.Product__r.Name}, {!Receipt__c.Product__r.Address__c}"/>
+                </apex:panelGrid>
+            </td>
+        </tr>
+        <tr class="spacer">
+            <td>
+                <apex:panelGrid columns="2" styleClass="details">
+                    <apex:outputText value="Description:"/><apex:outputText value="{!Receipt__c.Description__c}"/>
+                </apex:panelGrid>
+            </td>
+        </tr>
+        <tr class="spacer">
+            <td>
+                <apex:panelGrid columns="2" styleClass="details">
+                    <apex:outputText value="Received on behalf of:"/><apex:outputText value="{!$CurrentPage.parameters.va}"/>
+                </apex:panelGrid>
+            </td>
+        </tr>
+    </table>
+
+    <table width="100%">
+        <tr class="spacer">
+            <td>
+            </td>
+             <td>
+            </td>
+            <td>
+                <apex:panelGrid columns="2" styleClass="details" style="text-align: right;">
+                    <apex:outputText value="Amount:"/><apex:outputField value="{!Receipt__c.Amount__c}"/>
+                </apex:panelGrid>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <apex:outputText value="Signature:" style="font-weight: bold;"/><apex:outputText value=" ____________________"/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <apex:outputText value="Receipted By: " style="font-weight: bold;"/><apex:outputField value="{!Receipt__c.Receipted_By__c}"/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <apex:outputText value="Date Processed: " style="font-weight: bold;"/>{!$CurrentPage.parameters.processedDate}
+            </td>
+        </tr>
+    </table>
+    
+</apex:page>

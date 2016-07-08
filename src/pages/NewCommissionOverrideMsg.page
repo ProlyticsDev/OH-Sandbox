@@ -1,0 +1,6 @@
+<apex:page standardController="Commission__c"> 
+  <br/> 
+  <font size="3"> <b> Create New Commissions </b> </font>
+  <br/> <br/>
+  <font size="2"> To create new Commissions, please use the Commission button on the Opportunity records. </font>
+</apex:page>

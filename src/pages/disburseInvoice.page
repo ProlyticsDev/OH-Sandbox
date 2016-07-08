@@ -1,0 +1,238 @@
+<apex:page standardController="Receipt__c" showHeader="false" sidebar="false" standardStylesheets="false" renderAs="pdf">
+    <head>
+        <apex:stylesheet value="{!URLFOR($Resource.TrustAccountReceipts, 'style.css')}"/>
+    </head>
+    
+    <table width="100%" style="position:relative; top:-15px;">
+        <tr>
+            <td width="100%" style="text-align: left;">
+                <img src="{!URLFOR($Resource.TrustAccountReceipts, 'logo.png')}"/>
+            </td>
+            <td></td>
+        </tr>
+        
+        <tr>
+            <td colspan="10" align="center" valign="middle" width="100%">
+                <span><h2>Account Sale/Tax Invoice</h2></span>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: right;font-weight: bold;"><apex:outputText value="Date: " /></td>
+            <td style="font-weight: bold;">
+                {!$CurrentPage.parameters.processedDate}
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: right;font-weight: bold;"><apex:outputText value="Our Ref: " /></td>
+            <td style="font-weight: bold;">
+                {!Receipt__c.Opportunity__r.Customer_Reference__c}
+            </td>
+        </tr>
+    </table>
+    <table width="60%" style="position:relative; top:-15px;">
+        <tr class="spacer">
+            <td rowspan="3">
+                <apex:panelGrid columns="2" styleClass="details">
+                    <apex:outputText value="To:"/>
+                </apex:panelGrid>
+            </td>
+            <td>{!Receipt__c.Creditor__r.Account__r.Name}</td>
+        </tr>
+        <tr>
+            <td>{!Receipt__c.Creditor__r.Account__r.BillingStreet}</td>
+        </tr>
+        <tr>
+            <td>{!Receipt__c.Creditor__r.Account__r.BillingCity}, {!Receipt__c.Creditor__r.Account__r.BillingState}, {!Receipt__c.Creditor__r.Account__r.BillingPostalCode}</td>
+        </tr>
+    </table>
+    <table width="100%">
+        <tr class="spacer">
+            <td style="width:400px;">
+                
+                <apex:panelGrid columns="2" styleClass="details">
+                    <apex:outputText value="Vendor/Vendor Solicitor"/><apex:outputText value="{!Receipt__c.Opportunity__r.Project__r.Vendor__r.Name}/{!Receipt__c.Opportunity__r.Project__r.Solicitor__r.Name}" />
+                </apex:panelGrid>
+            </td>
+        </tr>
+        <tr class="spacer">
+            <td>
+                <apex:panelGrid columns="2" styleClass="details">
+                    <apex:outputText value="Purchaser:"/><apex:outputText value="{!Receipt__c.Opportunity__r.Purchaser__c}"/>
+                </apex:panelGrid>
+            </td>
+        </tr>
+        <tr class="spacer">
+            <td>
+                <apex:panelGrid columns="2" styleClass="details">
+                    <apex:outputText value="Property:"/><apex:outputText value="{!Receipt__c.Opportunity__r.Primary_Product__r.Name}, {!Receipt__c.Opportunity__r.Primary_Product__r.Street_Name__c}, {!Receipt__c.Opportunity__r.Primary_Product__r.City__c} "/>
+                </apex:panelGrid>
+            </td>
+            <td style="text-align: left;">
+                <apex:panelGrid columns="2" styleClass="details">
+                    <apex:outputText value="Estate:" style="font-weight: bold;"/><apex:outputText value="{!Receipt__c.Opportunity__r.Project__r.Name}"/>
+                </apex:panelGrid>
+            </td>
+        </tr>
+        <tr></tr>
+        <tr class="spacer">
+            <td>
+                <apex:panelGrid columns="2" styleClass="details">
+                    <apex:outputText value="Sale Price:"/>
+                    <apex:outputText value="{0, number, $###,###,###,##0.00}">
+                        <apex:param value="{!Receipt__c.Opportunity__r.Contract_Price__c}" />
+                    </apex:outputText>
+                </apex:panelGrid>
+            </td>
+            <td style="text-align: left;">
+                <apex:panelGrid columns="2" styleClass="details">
+                    <apex:outputText value="Sales Consultant:" style="font-weight: bold;white-space: nowrap;"/><apex:outputText value="{!Receipt__c.Opportunity__r.Salesperson_pa__r.Name}"/>
+                </apex:panelGrid>
+            </td>
+        </tr>
+        <tr class="spacer">
+            <td>
+                <apex:panelGrid columns="2" styleClass="details">
+                    <apex:outputText value="Sale Exchanged Date:"/>
+                    <c:formatdatetime date_Timevalue="{!Receipt__c.Opportunity__r.Registered_File_Date__c}" format_String="dd/MM/yyyy"/>
+                </apex:panelGrid>
+            </td>
+            <td style="text-align: left;">
+                <apex:panelGrid columns="2" styleClass="details">
+                    <apex:outputText value="Deposit Required:" style="font-weight: bold;white-space: nowrap;"/>
+                    <apex:outputText value="{0, number, $###,###,###,##0.00}">
+                        <apex:param value="{!Receipt__c.Opportunity__r.Full_Deposit_Required__c}" />
+                    </apex:outputText>
+                </apex:panelGrid>
+            </td>
+        </tr>
+        <tr class="spacer">
+            <td>
+                <apex:panelGrid columns="2" styleClass="details">
+                    <apex:outputText value="Settlement Due:"/><c:formatdatetime date_Timevalue="{!Receipt__c.Opportunity__r.Primary_Product__r.Expected_Settlement_Date__c}" format_String="dd/MM/yyyy"/>
+                </apex:panelGrid>
+            </td>
+        </tr>
+    </table>
+    <hr width="100%"/>
+    <table width="100%">
+        <tr class="spacer">
+            <td>
+            </td>
+             <td>
+            </td>
+            <td>
+                <apex:panelGrid columns="1" styleClass="details" style="text-align: right;">
+                    <apex:outputText value="Debit"/>
+                </apex:panelGrid>
+            </td>
+            <td>
+                <apex:panelGrid columns="1" styleClass="details" style="text-align: right;">
+                    <apex:outputText value="Credit"/>
+                </apex:panelGrid>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <apex:outputText value="Total Deposit received"/>
+            </td>
+            <td>
+            </td>
+            <td>
+            </td>
+            <td>
+                <apex:panelGrid columns="1" styleClass="details" style="text-align: right;">
+                    <apex:outputText value="{0, number, $###,###,###,##0.00}">
+                        <apex:param value="{!Receipt__c.Opportunity__r.Deposit_Received__c}" />
+                    </apex:outputText>
+                </apex:panelGrid>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <apex:outputText value="Commission (excl GST)"/>
+            </td>
+            <td>
+            </td>
+            <td>
+                <apex:panelGrid columns="1" styleClass="details" style="text-align: right;">
+                    <apex:outputText value="{0, number, $###,###,###,##0.00}" style="font-weight: normal;">
+                        <!--apex:param value="{!(Receipt__c.Opportunity__r.OH_Commission_Total__c) - (Receipt__c.Opportunity__r.OH_Commission_Total__c / 1.1)}" /-->
+                        <!--apex:param value="{!Receipt__c.Opportunity__r.OH_Commission_Total__c / 1.1}" /-->
+                        <apex:param value="{!Receipt__c.Opportunity__r.Total_Commission_from_Vendor__c / 1.1}" />
+                        <!--apex:param value="{!Receipt__c.Opportunity__r.OH_Commission_Total__c}" /-->
+                    </apex:outputText>
+                </apex:panelGrid>
+            </td>
+            <td>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <apex:outputText value="GST on Commission"/>
+            </td>
+            <td>
+            </td>
+            <td>
+                <apex:panelGrid columns="1" styleClass="details" style="text-align: right;">
+                    <apex:outputText value="{0, number, $###,###,###,##0.00}" style="font-weight: normal;">
+                        <!--apex:param value="{!Receipt__c.Opportunity__r.OH_Commission_Total__c * 0.1}" /-->
+                        <!--apex:param value="{!Receipt__c.Opportunity__r.OH_Commission_Total__c / 1.1}" /-->
+                        <!--apex:param value="{!(Receipt__c.Opportunity__r.OH_Commission_Total__c) - (Receipt__c.Opportunity__r.OH_Commission_Total__c / 1.1)}" /-->
+                        <apex:param value="{!Receipt__c.Opportunity__r.Total_Commission_from_Vendor__c * (0.1/1.1)}" />
+                    </apex:outputText>
+                </apex:panelGrid>
+            </td>
+            <td>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <apex:outputText value="Total Commission due to Oliver Hume at Settlement" />
+            </td>
+            <td>
+            </td>
+            <td>
+                <apex:panelGrid columns="1" styleClass="details" style="text-align: right;">
+                    <apex:outputText value="{0, number, $###,###,###,##0.00}">
+                        <!--apex:param value="{!Receipt__c.Opportunity__r.OH_Commission_Total__c * 1.1}" /-->
+                        <!--apex:param value="{!Receipt__c.Opportunity__r.OH_Commission_Total__c}" /-->
+                        <apex:param value="{!Receipt__c.Opportunity__r.Total_Commission_from_Vendor__c}" />
+                    </apex:outputText>
+                </apex:panelGrid>
+            </td>
+            <td>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <apex:outputText value="Balance of Deposit remitted to Vendor/Vendors Solicitor" style="font-weight: bold;white-space: nowrap;"/>
+            </td>
+            <td>
+            </td>
+            <td>
+            </td>
+            <td>
+                <apex:panelGrid columns="1" styleClass="details" style="text-align: right; font-weight: bold;">
+                    <apex:outputText value="{0, number, $###,###,###,##0.00}">
+                        <!--apex:param value="{!(Receipt__c.Opportunity__r.Deposit_Received__c - (Receipt__c.Opportunity__r.OH_Commission_Total__c * 1.1))}" /-->
+                        <!--apex:param value="{!(Receipt__c.Opportunity__r.Deposit_Received__c - (Receipt__c.Opportunity__r.OH_Commission_Total__c - (Receipt__c.Opportunity__r.OH_Commission_Total__c / 1.1)))}" /-->
+                        <apex:param value="{!Receipt__c.Amount__c}" />
+                    </apex:outputText>
+                </apex:panelGrid>
+            </td>
+        </tr>
+    </table>
+    <br/>
+    <table width="100%" style="position:relative; top:-20px;">
+        <tr class="spacer">
+            <td>
+                <apex:outputText value="{!Receipt__c.Opportunity__r.Primary_Product__r.Project__r.OH_Account__r.Name}"/><br/>
+                <apex:outputText value="{!Receipt__c.Opportunity__r.Primary_Product__r.Project__r.OH_Account__r.ABN__c}"/><br/>
+                <apex:outputText value="{!Receipt__c.Opportunity__r.Primary_Product__r.Project__r.OH_Account__r.BillingStreet}, {!Receipt__c.Opportunity__r.Primary_Product__r.Project__r.OH_Account__r.BillingCity}, {!Receipt__c.Opportunity__r.Primary_Product__r.Project__r.OH_Account__r.BillingState}, {!Receipt__c.Opportunity__r.Primary_Product__r.Project__r.OH_Account__r.BillingPostalCode}, {!Receipt__c.Opportunity__r.Primary_Product__r.Project__r.OH_Account__r.BillingCountry}"/><br/>
+                <apex:outputText value="{!Receipt__c.Opportunity__r.Primary_Product__r.Project__r.OH_Account__r.Phone}"/><br/>
+                <apex:outputText value="trustaccounting@oliverhume.com.au"/><br/>
+                <apex:outputText value="{!Receipt__c.Opportunity__r.Primary_Product__r.Project__r.OH_Account__r.WebSite}"/>
+            </td>
+        </tr>
+    </table>
+</apex:page>

@@ -1,0 +1,250 @@
+<apex:page controller="accountSaleController" showHeader="false" standardStylesheets="false" applyHtmlTag="false" renderAs="{!If(isPDF,'PDF','')}">
+        <head>
+                <style>
+                        @page
+                        {
+                                size: 210mm 297mm;  
+                                margin-top:40mm;
+                                margin-bottom:40mm;
+                                margin-left:10mm;
+                                margin-right:10mm;
+                                
+                                @top-left {
+                                    content: element(header_left);
+                                }
+                                
+                                @bottom-center {
+                                    content: element(footer_center);
+                                }
+                         }
+                         .header_left{
+                            text-align: left;
+                            position: running(header_left);
+                            width:100mm;
+                            height:40mm;
+                            display:block;
+                            /*margin:10mm;*/
+                            margin-top:10mm;
+                        }
+                        
+                        .footer_center {
+                            text-align: center;
+                            position: running(footer_center);
+                            width:197mm;
+                            /*height:20mm;*/
+                        }
+                        #divParent
+                        {
+                                position:relative;
+                                /*top:30px;*/
+                                width:100%;
+                                font-size:12px;
+                                font-weight:600; 
+                                display:block;
+                                page-break-after:always;
+                                font-family: Arial, Helvetica, sans-serif ;
+                        }
+                        #tableSummary td
+                        {
+                                padding-right: 15px;
+                        }
+                        #trBottomBorder td
+                        {
+                                border-bottom: thin solid;
+                                border-color: black;
+                        }
+                        #divParent table
+                        {
+                                padding: 0px;
+                                border-spacing: 0px;
+                        }
+                        #tableDebitCredit td
+                        {
+                                padding-right: 10px;
+                        }
+                        .tdFontUnderline
+                        {
+                                text-decoration: underline;
+                        }
+                        .rightAlign
+                        {
+                            text-align:right;
+                            white-space:nowrap;
+                        }
+                        .footerContainer{
+                            position:relative;
+                            font-family: Arial, Helvetica, sans-serif;
+                        }
+                        .footerContainer div{
+                            font-size:10px;
+                            float:left;
+                            width:240px;
+                            text-align:left;
+                        }
+                </style>
+        </head>
+        <apex:form >
+                <apex:commandButton action="{!ChangePage}" />
+        </apex:form>
+        <div class="header_left">
+            <div id="logo">
+            <apex:image value="{!$Resource.newOHLogo}" width="300px;"/>
+            </div>
+        </div>
+        <div class="footer_center">
+            <div class="footerContainer">
+                <div id="footerLeft" style="margin-top:13px;">
+                    <b>Oliver Hume Real Estate Group Pty Ltd <br/>
+                    trading as Oliver Hume <br/>
+                    New Communities</b><br/>
+                    Level 2, 6 Riverside Quay<br/>
+                    Southbank VIC 3006 Australia<br/>
+                </div>
+            
+                <div id="footerCenter" style="margin-top:32px;">
+                    <b>Phone</b> 03 9669 5999 <b>Fax</b> 03 9669 5995<br/>
+                    <b>Email</b> oliverhume@oliverhume.com.au<br/>
+                    <b style="display:inline-block; margin-top:3px;">www.oliverhume.com.au/newcommunities</b><br/>
+                </div>
+            
+                <div id="footerRight" style="font-size:8px; margin-left:10px;">
+                    Oliver Hume Real Estate Group Pty Ltd<br/>
+                    <span style="display:inline-block; margin-top:3px;">Licensed Estate Agents</span><br/>
+                    Directors:<br/>
+                    Paul Ciprian - Licensed Estate Agent &amp; Officer in Effective Control<br/>
+                    Gerrard Ellis - Licensed Estate Agent<br/>
+                    Michael Duster - Licensed Estate Agent<br/>
+                    <b style="display:inline-block; margin-top:3px;">ABN 19 158 513 190 ACN 158 513 190</b> <br/>
+                </div>
+            </div>
+        </div>
+        <apex:repeat id="receiptRepeater" value="{!listCustomOpportunities}" var="oWrapper">
+                <div id="divParent" style="{!IF(index == oWrapper.index, 'page-break-after:avoid;', '')}">
+                        <div id="divHeader" style="text-align:center; margin-bottom:20px; font-weight:bold; font-size:20px;">
+                            REMITTANCE ADVICE
+                        </div>
+                        <div id="divSummary">
+                                <table id="tableSummary">
+                                        <tr><td>&nbsp;</td></tr>
+                                        <tr><td>&nbsp;</td></tr>
+                                        <tr>
+                                                <td>Vendor:</td>
+                                                <td>
+                                                        <apex:outputText value="{!oWrapper.opp.Primary_Product__r.Project__r.Vendor__r.Name}" />
+                                                        <br />
+                                                        <apex:outputText value="{!oWrapper.vendorAddress}" escape="false" />
+                                                </td>
+                                        </tr>
+                                        <tr><td colspan="2">&nbsp;</td></tr>
+                                        <tr><td colspan="2">&nbsp;</td></tr>
+                                        <tr>
+                                                <td>Buyer:</td>
+                                                <td>{!oWrapper.opp.Account.Name}</td>
+                                        </tr>
+                                        <tr><td colspan="2">&nbsp;</td></tr>
+                                        <tr>
+                                                <td>Property:</td>
+                                                <td>{!oWrapper.productProject}</td>
+                                        </tr>
+                                        <tr>
+                                                <td>Property Sale Price:</td>
+                                                <td>
+                                                        <apex:outputText value="${0, number, ###,##0.00}">
+                                                                <apex:param value="{!oWrapper.opp.Net_Price__c}"/>
+                                                        </apex:outputText>
+                                                </td>
+                                        </tr>
+                                </table>
+                        </div>
+                        <div id="divReference" style="position:absolute; top:40px; right:0px;">
+                                <table>
+                                        <tr><td>Our Ref: {!oWrapper.opp.Ledger_Number__c}</td></tr>
+                                        <tr><td>{!oWrapper.formattedTodayDate}</td></tr>
+                                        <tr><td>&nbsp;</td></tr>
+                                        <tr><td>{!oWrapper.opp.Primary_Product__r.Project__r.Project_Manager__r.Name}</td></tr>
+                                        <tr><td>Sale Exchange Date:</td></tr>
+                                        <tr><td>{!oWrapper.formattedExchangedDate}</td></tr>
+                                </table>
+                        </div>
+                        <div id="divDebitCredit" style="width:100%;">
+                                <table style="width:100%;" id="tableDebitCredit">
+                                        <tr id="trBottomBorder">
+                                                <td style="width:70%">&nbsp;</td>
+                                                <td style="width:15%" class="tdFontUnderline rightAlign">Debit</td>
+                                                <td style="width:15%" class="tdFontUnderline rightAlign">Credit</td>
+                                        </tr>
+                                        <tr>
+                                                <td>Total Deposit Monies Received</td>
+                                                <td class="rightAlign"></td>
+                                                <td class="rightAlign">
+                                                        <apex:outputText value="${0, number, ###,##0.00}">
+                                                                <apex:param value="{!oWrapper.opp.Deposit_Received__c}"/>
+                                                        </apex:outputText>
+                                                </td>
+                                        </tr>
+                                        <tr>
+                                                <td colspan="3">&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                                <td>Deposit Monies in total remitted to Vendor Solicitors Trust Account</td>
+                                                <td class="rightAlign">
+                                                        <apex:outputText value="${0, number, ###,##0.00}">
+                                                                <apex:param value="{!oWrapper.opp.Deposit_Transferred__c}"/>
+                                                        </apex:outputText>
+                                                </td>
+                                                <td class="rightAlign"></td>
+                                        </tr>
+                                </table>
+                        </div>
+                        <div id="divCurrentFutureActivity" style="position:relative; top:20px;">
+                                <table style="width:35%;">
+                                        <tr><td colspan="2" class="tdFontUnderline">Current &amp; Future Activity</td></tr>
+                                        <tr>
+                                                <td>Full Commission</td>
+                                                <td class="rightAlign">
+                                                        <apex:outputText value="${0, number, ###,##0.00}">
+                                                                <apex:param value="{!oWrapper.totalCommission}"/>
+                                                        </apex:outputText>
+                                                </td>
+                                        </tr>
+                                </table>
+                                <table style="width:65%; padding-right: 15px;" class="rightAlign">
+                                        <tr><td colspan="2">&nbsp;</td></tr>
+                                        <tr>
+                                                <td style="width:75%;">Commission due to Oliver Hume at Settlement</td>
+                                                <td style="width:25%;">
+                                                        <apex:outputText value="${0, number, ###,##0.00}">
+                                                                <apex:param value="{!oWrapper.opp.OH_Commission_Total__c}"/>
+                                                        </apex:outputText>
+                                                </td>
+                                        </tr>
+                                        <tr>
+                                                <td>GST</td>
+                                                <td>
+                                                        <apex:outputText value="${0, number, ###,##0.00}">
+                                                                <apex:param value="{!oWrapper.gstCommission}"/>
+                                                        </apex:outputText>
+                                                </td>
+                                        </tr>
+                                        <tr>
+                                                <td>Total commission (inc GST) due at Settlement</td>
+                                                <td>
+                                                        <apex:outputText value="${0, number, ###,##0.00}">
+                                                                <apex:param value="{!oWrapper.totalCommission}"/>
+                                                        </apex:outputText>
+                                                </td>
+                                        </tr>
+                                </table>
+                        </div>
+                        <div style="position:relative; top:100px; text-align:center">
+                                <div id="divDaysFromSettlement" style="position:relative; margin: 0px auto 0px auto;">
+                                        Payment Terms 7 Days from settlement to Oliver Hume Real Estate Group Pty Ltd.
+                                </div>
+                                <div id="divPreferred" style="position:relative; top:90px; margin: 0px auto 0px auto;">
+                                        If preferred full payment can remitted directly to Oliver Hume Real Estate Group Pty Ltd NAB<br/>
+                                        BSB: 083-347 Account 137677901
+                                </div>
+                        </div>
+                </div>
+        </apex:repeat>
+</apex:page>

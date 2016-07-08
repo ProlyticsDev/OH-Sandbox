@@ -1,0 +1,137 @@
+<apex:page standardController="Account" >
+<!-- 
+extensions="commissionStatementGeneratorController" recordSetVar="accounts" showHeader="true" sidebar="true" title="Commission Statement Generator">
+    <head>
+        <apex:stylesheet value="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.min.css"/>
+        <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+        <script src="//code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
+        <script type="text/javascript">
+            var j$ = jQuery.noConflict();
+            var accountTable;
+            var accountCount;
+            var accountIndex;
+
+            function saveStatements(){
+                j$( "#theDialog" ).dialog("open");
+
+                var accountIds = new Array();
+
+                j$('.accountTable').find('.dataRow').each(function(index, value){
+                    if(j$(value).find('.statementCheckbox').is(':checked')){
+                        accountIds.push(j$(value).find('.idValue').val());
+                    }
+                });
+
+                if(accountIds.length > 0){
+                    //send the invoice ids to the remote method for processing.
+                    j$("#theDialog").html('<p>Processing '+accountIds.length+' Statements</p>');
+
+                    setTimeout( function(){
+                        //save the list length
+                        accountCount = accountIds.length;
+
+                        j$.each(accountIds, function(index, value){
+                            setTimeout(function(){
+                                accountIndex = index;
+                                Visualforce.remoting.Manager.invokeAction('{!$RemoteAction.commissionStatementGeneratorController.saveStatement}', value, '{!startString}', '{!endString}', statementProcessed,
+                                    {buffer: false, escape: true}
+                                );
+                            }, index*1000);
+                        });
+                    
+                    }, 1000); 
+                }
+                else{
+                    alert('No Record to Process!');
+                    j$( "#theDialog" ).dialog("close");
+                } 
+            }
+        
+            j$(window).bind("load", function(){
+                var d = j$("#theDialog");
+                d.dialog
+                ({
+                    modal: true,
+                    dialogClass: "no-close",
+                    draggable: false,
+                    resizable: false,
+                    autoOpen: false
+                          
+                });
+            });
+        
+            function statementProcessed(result, event){
+                //callback for remoting method above.
+                if(event.status){
+                    j$("#theDialog").html('<p>Processed Statement: <br/>'+result+'</p><br/><br/>Statement: '+ (accountIndex + 1) + '/' + accountCount);
+
+                    if (accountIndex == accountCount - 1){
+                        setTimeout(function(){
+                            //hide modal
+                            j$( "#theDialog" ).dialog( "close" );
+                        }, 1000)
+                    }
+                }
+                else if(event.type === 'exception'){
+                    alert(event.message);
+                }
+            }
+
+        </script>
+    </head>
+
+    <apex:form >
+        <apex:pageBlock id="theBlock" title="Commission Statement Generator">
+            <apex:pageBlockButtons >
+                <apex:commandButton action="{!Cancel}" value="Close"/>
+                <apex:commandButton action="{!ShowGenerator}" value="Go" rendered="{!showSettings}"/>
+                <apex:commandButton action="{!Generate}" value="Generate" rendered="{!NOT(showSettings)}" reRender="scriptPanel" oncomplete="openStatement();"/>
+                <apex:commandButton value="Save" rendered="{!NOT(showSettings)}" onclick="saveStatements(); return false;"/>
+            </apex:pageBlockButtons>
+            <apex:outputPanel id="scriptPanel">
+                <script>
+                    function openStatement(){
+                        window.open('{!statementURL}', 'Commission Statement', "height=700,width=500");
+                    
+                    }
+                
+                </script>
+                
+            </apex:outputPanel>
+            <apex:pageMessages />
+            <apex:pageBlockSection title="Commission Statement Settings" collapsible="true" rendered="{!showSettings}">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Start Date" for="startDate"/>
+                    <apex:inputField value="{!inputObj.Effective_Date__c}" id="startDate"/>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="End Date" for="endDate"/>
+                    <apex:inputField value="{!inputObj.Due_Date__c}" id="endDate"/>
+                </apex:pageBlockSectionItem>
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockSection title="Commission Statement Generator" rendered="{!NOT(showSettings)}" columns="1">
+
+                <apex:pageBlockTable value="{!selected}" var="a" styleClass="accountTable">
+                    <apex:column >
+                        <apex:facet name="header">
+                            <apex:outputPanel layout="none">
+                                <apex:outputLabel value="All" for="selectAll"/>
+                                <apex:inputCheckbox value="{!selectAll}" id="selectAll">
+                                    <apex:actionSupport event="onchange" action="{!ToggleAll}" reRender="theBlock"/>
+                                </apex:inputCheckbox>
+                            </apex:outputPanel>
+                        </apex:facet>
+                        <apex:inputCheckbox value="{!selectedAccounts[a.Id]}" styleClass="statementCheckbox"/>
+                        <input type="hidden" class="idValue" value="{!a.Id}"/>
+                    </apex:column>
+                    <apex:column value="{!a.Name}"/>
+                    <apex:column value="{!a.Commission_Structure__c}"/>
+                </apex:pageBlockTable>
+
+            </apex:pageBlockSection>
+        </apex:pageBlock>
+    </apex:form>
+    <div id="theDialog" title="Processing">
+    </div> -->
+</apex:page>

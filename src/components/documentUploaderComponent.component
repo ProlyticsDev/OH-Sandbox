@@ -1,0 +1,30 @@
+<apex:component controller="documentUploaderController" allowDML="true" layout="block">
+	<apex:attribute name="accountId" type="Id" assignTo="{!documentStaffMemberId}" description="The Id of the Person Account against which document will be uploaded" required="true" />
+	<apex:attribute name="isEditMode" type="boolean" description="The edit mode property of parent page" required="true" />
+	<apex:form id="documentForm">
+		<apex:pageBlock mode="detail" title="Document Uploader" >
+		<apex:pageMessages />
+			<apex:pageBlockSection >
+				<apex:pageBlockSectionItem >
+					<apex:outputLabel value="File" for="File" />
+					<apex:inputFile value="{!documentValue}" filename="{!documentName}" contentType="{!documentContentType}" id="File" />
+				</apex:pageBlockSectionItem>
+				<apex:inputField value="{!objDocument.Name}" required="true" label="File Name" />
+				<apex:inputField value="{!objDocument.Type__c}" id="documentType" label="Type" />
+				<apex:inputField value="{!objDocument.Project__c}" id="documentProject" label="Project" />
+				<apex:inputField value="{!objDocument.Expiry_Date__c}" id="documentExpiry" label="Expiry Date" />
+			</apex:pageBlockSection>
+			<apex:outputPanel id="scriptPanel">
+				<script type="text/javascript">
+					if({!isSaveSuccessful})
+					{
+						window.top.location="/{!documentStaffMemberId}";
+					}
+				</script>
+			</apex:outputPanel>
+			<apex:pageBlockButtons location="bottom">
+	        	<apex:commandButton value="Upload" action="{!UploadDocument}" />
+		    </apex:pageBlockButtons>
+		</apex:pageBlock>
+	</apex:form>
+</apex:component>

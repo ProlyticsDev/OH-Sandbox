@@ -1,0 +1,164 @@
+<apex:page showHeader="false" controller="commissionStatementController"  renderAs="PDF">
+<!-- 
+    <head>
+        <apex:stylesheet value="{!URLFOR($Resource.CommissionStatements, 'style.css')}"/>
+    </head>
+    <div class="header_left">
+        <div id="logo">
+        <apex:image value="{!$Resource.newOHLogo}" width="300px;"/>
+        </div>
+    </div>
+    <div class="statement">
+        <apex:repeat value="{!commissions}" var="c">
+            <div class="entry">
+                <table width="100%">
+                    <tr>
+                        <td width="50%"></td>
+                        <td width="50%" class="textRight">
+                                <div style="font-weight:bold; font-size:14px;">
+                                <apex:outputText value="{!c.acct.Name}"/>
+                                <br />
+                                <apex:outputText value="Commission Statement as of {0,date,dd MMMM yyyy}">
+                                    <apex:param value="{!NOW()}"/>
+                                </apex:outputText>                                
+                                <br />
+                            
+                                <apex:outputText value="{!c.acct.Payroll_ID__c}"/>
+                                <br />
+                                
+                                <span style="margin-right:50px;">Prepayments brought forward</span>
+                                <apex:outputText value="${0,number,###,###,##0.00}">
+                                    <apex:param value="{!c.acct.Retainer_Balance__c}"/>
+                                </apex:outputText>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                <h3>
+                    <apex:outputText value="There are no settled commission records for the period specified." rendered="{!c.noSettled}"/>
+                </h3>
+            
+                <h2 class="heading">
+                    <div>
+                        <apex:outputText value="Settlements for {0,date,dd MMMM yyyy} to {1,date,dd MMMM yyyy}">
+                            <apex:param value="{!c.statementStart}"/>
+                            <apex:param value="{!c.statementEnd}"/>
+                        </apex:outputText>
+                    </div>
+                </h2>
+                <apex:dataTable value="{!c.settled}" var="s" width="720px">
+                    <apex:column value="{!s.Opportunity__r.Ref__c}" headerValue="Reference" style="width:80px;" headerClass="eightyWide"/>
+                    <apex:column headerValue="Exch. Date" style="width:80px;" headerClass="eightyWide">
+                        <apex:outputText value="{0,date,dd/MM/yyyy}">
+                            <apex:param value="{!s.Opportunity__r.Exchanged_Date__c}"/>
+                        </apex:outputText>
+                    </apex:column>
+                    <apex:column headerValue="Property" value="{!s.Opportunity__r.Primary_Product__r.Street_Number__c} {!s.Opportunity__r.Primary_Product__r.Street_Name__c}" style="width:170px;" headerClass="oneSeventyWide"/>
+                    <apex:column headerValue="Buyer" value="{!s.Opportunity__r.Purchaser__c}" style="width:150px;" headerClass="oneFiftyWide"/>
+                    <apex:column headerValue="Pending" style="width:80px;" headerClass="eightyWide">
+                        <apex:outputText value="$0.00"/>
+                    </apex:column>
+                    <apex:column headerValue="Settled" style="width:80px;" headerClass="eightyWide">
+                        <apex:outputField value="{!s.Amount__c}"/>
+                    </apex:column>
+                    <apex:column headerValue="Running Total" style="width:80px;" headerClass="eightyWide">
+                        <apex:outputText value="${0,number,###,###,##0.00}">
+                            <apex:param value="{!c.runningTotal[s.Id]}"/>
+                        </apex:outputText>
+                    </apex:column>
+                </apex:dataTable>
+                <table width="720px">
+                    <tr>
+                        <td colspan="3" width="67%"></td>
+                        <td width="11%" class="topBorder">
+                            <apex:outputText value="${0,number,###,###,##0.00}">
+                                <apex:param value="{!0}"/>
+                            </apex:outputText>
+                        </td>
+                        <td width="11%" class="topBorder">
+                            <apex:outputText value="${0,number,###,###,##0.00}">
+                                <apex:param value="{!c.settledTotal}"/>
+                            </apex:outputText>
+                        </td>
+                        <td width="11%"></td>
+                    </tr>
+                </table>
+                <h3>
+                    <apex:outputText value="There are no pending commission records." rendered="{!c.noPending}"/>
+                </h3>
+                <apex:repeat value="{!c.months}" var="m">
+                    <apex:outputPanel styleClass="pendingSection">
+                        <h2 class="heading">
+                            <div>
+                                <apex:outputText value="Projected Settlements for {0,date,MMMM yyyy}">
+                                    <apex:param value="{!m}"/>
+                                </apex:outputText>
+                            </div>
+                        </h2>
+                        <apex:dataTable value="{!c.commissionMap[m]}" var="cc" width="720px">
+                            <apex:column value="{!cc.Opportunity__r.Ref__c}" headerValue="Reference" style="width:80px;"/>
+                            <apex:column headerValue="Exch. Date" style="width:80px;">
+                                <apex:outputText value="{0,date,dd/MM/yyyy}">
+                                    <apex:param value="{!cc.Opportunity__r.Exchanged_Date__c}"/>
+                                </apex:outputText>
+                            </apex:column>
+                            <apex:column headerValue="Property" value="{!cc.Opportunity__r.Primary_Product__r.Street_Number__c} {!cc.Opportunity__r.Primary_Product__r.Street_Name__c}" style="width:170px;"/>
+                            <apex:column headerValue="Buyer" value="{!cc.Opportunity__r.Purchaser__c}" style="width:150px;"/>
+                            <apex:column headerValue="Pending" style="width:80px;">
+                                <apex:outputField value="{!cc.Amount__c}"/>
+                            </apex:column>
+                            <apex:column headerValue="Settled" style="width:80px;">
+                                <apex:outputText value="$0.00"/>
+                            </apex:column>
+                            <apex:column headerValue="Running Total" style="width:80px;">
+                                <apex:outputText value="${0,number,###,###,##0.00}">
+                                    <apex:param value="{!c.settledTotal}"/>
+                                </apex:outputText>
+                            </apex:column>
+                        </apex:dataTable>
+                        <table width="720px">
+                            <tr>
+                                <td colspan="3" width="67%"></td>
+                                <td width="11%" class="topBorder">
+                                    <apex:outputText value="${0,number,###,###,##0.00}">
+                                        <apex:param value="{!c.pendingTotals[m]}"/>
+                                    </apex:outputText>
+                                </td>
+                                <td width="11%" class="topBorder">
+                                    <apex:outputText value="${0,number,###,###,##0.00}">
+                                        <apex:param value="{!0}"/>
+                                    </apex:outputText>
+                                </td>
+                                <td width="11%"></td>
+                            </tr>
+                        </table>
+                    </apex:outputPanel>
+                </apex:repeat>
+            </div>
+            <div style="width:670px; text-align:right; margin-top:30px; font-weight:bold;">
+                <div>
+                    <span>Commission Payable</span>
+                    <apex:outputText value="${0,number,###,###,##0.00}" style="width:100px; display:inline-block;">
+                        <apex:param value="{!c.settledTotal}"/>
+                    </apex:outputText>
+                </div>
+                <div style="margin-top:10px;">
+                    <apex:outputText value="Less Retainer Paid {0,date,dd MMMM yyyy}">
+                        <apex:param value="{!c.statementEnd}"/>
+                    </apex:outputText>
+                     <apex:outputText value="${0,number,###,###,##0.00}" style="width:100px; display:inline-block;">
+                        <apex:param value="{!c.retainerTotal}"/>
+                    </apex:outputText>
+                </div>
+                <div style="margin-top:20px;">
+                    <div style="border-top:2px solid; padding-top:5px; margin-left:350px;">
+                         <span>Amount to be Paid</span>
+                         <apex:outputText value="${0,number,###,###,##0.00}" style="width:100px; display:inline-block;">
+                            <apex:param value="{!c.commissionDue}"/>
+                        </apex:outputText>
+                    </div>
+                </div>
+            </div>
+        </apex:repeat>
+    </div> -->
+</apex:page>

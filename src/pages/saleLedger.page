@@ -1,0 +1,220 @@
+<apex:page controller="SaleLedgerRptGeneratorController" action="{!generateSalesLedger}" showHeader="false" sidebar="false" standardStylesheets="false" renderAs="pdf" applyBodyTag="false">
+	<head>
+        <!--<apex:stylesheet value="{!URLFOR($Resource.TrustAccountReceipts, 'style.css')}"/>-->
+		<style>
+            @page {
+            	margin-top: 3.2cm;
+ 				margin-bottom: 2cm;
+ 				margin-left: 1cm;
+ 				margin-right: 1cm;
+				@top-left {
+    				content: element(header);
+				}
+		
+				@bottom-left {
+    				content: element(footer);
+				}
+            	
+            	@bottom-right{
+            		font-family: sans-serif;
+					font-size: 7pt;
+                	font-weight:bold;
+           			content: counter(page) " of " counter(pages); 
+            		white-space: nowrap;
+            		text-align: right;
+            		padding-right: 15px;
+            		margin-top: 7px;
+            		padding-top: 7px;
+				}
+            
+            }
+            
+            div.header {
+				padding: 10px;
+            	position: running(header);
+			}
+        	
+            div.footer {
+                display: block;
+                padding: 0px;
+                position: running(footer);
+                font-size: 7pt;
+                font-weight:bold;
+			}
+            
+            div.content {
+                position: relative;
+                top: 0px;
+            	font-family: sans-serif;
+                font-size: 0.8em;
+            }
+            
+            body {
+                font-family: sans-serif;
+                font-size: 0.8em;
+			}
+            
+            tr.theader {
+                font-family: sans-serif;
+                font-size: 0.8em;
+            	font-weight: bold;
+			}
+            
+        </style>
+    </head>
+
+    <div class="header">
+        <table width="100%">
+            <tr>
+            	<td colspan="10" width="100%" style="font-size: 8pt;">
+                    <span><c:formatdatetime date_Timevalue="{!NOW()}" format_String="EEE dd MMM yyyy HH:mm a"/></span>
+                </td>
+            </tr>
+            <tr>
+            	<td colspan="10" align="center" valign="middle" width="100%">
+                    <span><h2>Sale Ledger</h2></span>
+                </td>
+            </tr>
+            <tr class="theader">
+                <td width="10%">Audit</td>
+                <td width="10%">Date</td>
+                <td width="7%">Ref</td>
+                <td width="10%">Method</td>
+                <td width="13%">Type</td>
+                <td width="20%">Details</td>
+                <td width="10%" align="right">Debit</td>
+                <td width="10%" align="right">Credit</td>
+                <td width="10%" align="right">Balance</td>
+            </tr>
+            
+        </table>
+        <hr/>
+
+    </div>
+	
+    <div class="footer">
+        <hr style="width: 109%;"/>
+        <table>
+            <tr>
+                <td style="width: 8%">{!trustAccount.code}</td>
+                <td style="width: 12%">[{!$User.FirstName} {!$User.LastName}]</td>
+                <td style="width: 20%">{!trustAccount.accountname}</td>
+                <td style="width: 15%">ABN {!trustAccount.abn}</td>
+                <td style="width: 40%; text-align: right;">{!trustAccount.name}</td>
+            </tr>
+        </table>
+    </div>
+
+    
+    <div class="content">
+        
+        <table width="100%">
+            <tr>
+                <td width="100%" colspan="9"><b>{!entry.opportunityName}</b></td>
+            </tr>
+            <tr>
+                <td width="100%" colspan="9" style="padding-left: 20px;">{!entry.vendorAddress}</td>
+            </tr>
+            <tr>
+                <td width="10%"></td><td width="10%"></td><td width="7%"></td><td width="10%"></td><td width="13%"></td>
+                <td width="20%"><b>Opening Balance</b></td><td width="10%"></td><td width="10%"></td>
+                <td width="10%" align="right">
+                    <b>
+                        <apex:outputText value="{0, number, $###,###,###,##0.00}">
+                            <apex:param value="{!entry.openingBalance}" />
+                        </apex:outputText>
+                    </b>
+                </td>
+            </tr>
+            <apex:repeat value="{!entry.salesLedgerRecords}" var="e">
+                <tr>
+                    <td width="10%">{!e.ledgerEntry.Transaction_ID_Reference__c}</td>
+                    <td width="10%">
+                        <apex:outputText value="{0, date, dd/MM/yyyy}">
+                            <apex:param value="{!e.ledgerEntry.Date__c}" /> 
+                        </apex:outputText>
+                    </td>
+                    <td width="7%">{!e.ledgerEntry.Report_Reference__c}</td>
+                    <td width="10%">{!e.ledgerEntry.Payment_Method__c}</td>
+                    <td width="13%">{!e.ledgerEntry.Description__c}</td>
+                    <td width="20%">{!e.ledgerEntry.Notes__c}</td>
+                    <td width="10%" align="right">
+                        <apex:outputText value="{0, number, $###,###,###,##0.00}" rendered="{!e.typeChar == 'P'}">
+                            <apex:param value="{!e.ledgerEntry.Amount__c}" />
+                        </apex:outputText>
+                    </td>
+                    <td width="10%" align="right">
+                        <apex:outputText value="{0, number, $###,###,###,##0.00}" rendered="{!e.typeChar == 'R'}">
+                            <apex:param value="{!e.ledgerEntry.Amount__c}" />
+                        </apex:outputText>
+                    </td>
+                    <td width="10%" align="right">
+                        <apex:outputText value="{0, number, $###,###,###,##0.00}">
+                            <apex:param value="{!e.balance}" />
+                        </apex:outputText>
+                    </td>
+                </tr>
+            </apex:repeat>
+            <!--
+            <apex:repeat value="{!entry.salesLedgerRecordsForPayments}" var="debitEntry">
+                <tr>
+                    <td width="10%">{!debitEntry.ledgerEntry.Transaction_ID_Reference__c}</td>
+                    <td width="10%">
+                        <apex:outputText value="{0, date, dd/MM/yyyy}">
+                            <apex:param value="{!debitEntry.ledgerEntry.Date__c}" /> 
+                        </apex:outputText>
+                    </td>
+                    <td width="7%">{!debitEntry.ledgerEntry.Report_Reference__c}</td>
+                    <td width="10%">{!debitEntry.ledgerEntry.Payment_Method__c}</td>
+                    <td width="13%">{!debitEntry.ledgerEntry.Description__c}</td>
+                    <td width="20%">{!debitEntry.ledgerEntry.Notes__c}</td>
+                    <td width="10%" align="right">
+                        <apex:outputText value="{0, number, $###,###,###,##0.00}">
+                            <apex:param value="{!debitEntry.ledgerEntry.Amount__c}" />
+                        </apex:outputText>
+                    </td>
+                    <td width="10%"></td>
+                    <td width="10%" align="right">
+                        <apex:outputText value="{0, number, $###,###,###,##0.00}">
+                            <apex:param value="{!debitEntry.balance}" />
+                        </apex:outputText>
+                    </td>
+                </tr>
+            </apex:repeat>
+			-->
+            <tr>
+                <td width="10%"></td><td width="10%"></td><td width="7%"></td><td width="10%"></td><td width="13%"></td>
+                <td width="20%"><b>Closing Balance</b></td>
+                <td width="10%" align="right">
+                    <hr/>
+                    <b>
+                        <apex:outputText value="{0, number, $###,###,###,##0.00}">
+                            <apex:param value="{!entry.closingBalanceDebit}" />
+                        </apex:outputText>
+                    </b>
+                    <hr/>
+                </td>
+                <td width="10%" align="right">
+                    <hr/>
+                    <b>
+                        <apex:outputText value="{0, number, $###,###,###,##0.00}">
+                            <apex:param value="{!entry.closingBalanceCredit}" />
+                        </apex:outputText>
+                    </b>
+                    <hr/>
+                </td>
+                <td width="10%" align="right">
+                    <hr/>
+                    <b>
+                        <apex:outputText value="{0, number, $###,###,###,##0.00}">
+                            <apex:param value="{!entry.closingBalanceBalance}" />
+                        </apex:outputText>
+                    </b>
+                    <hr/>
+                </td>
+            </tr>
+        </table>
+        <br/>
+    </div>
+        
+</apex:page>

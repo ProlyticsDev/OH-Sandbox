@@ -1,0 +1,72 @@
+<apex:page showHeader="false" standardStylesheets="true" controller="enquiryController">
+    <apex:pageMessages />
+    <style>
+        body{
+            background-color:#CFEEF8;
+        }
+        
+        .roundedBox{
+            padding:10px;
+            background-color:#1797C0;    
+            -moz-border-radius: 10px;
+            -webkit-border-radius: 10px;
+            -khtml-border-radius: 10px;
+            border-radius: 10px;
+            width:140px;
+            height:80px;
+            margin: 0 auto;
+            color:white;
+        }
+    </style>
+    <apex:outputPanel id="container">
+        <apex:form >
+            <apex:actionRegion >
+                <apex:outputLabel >Project</apex:outputLabel><br />
+                <!--<apex:selectList size="1" style="width:180px;" value="{!projectId}">
+                    <apex:selectOptions value="{!projects}"/>
+                </apex:selectList>-->
+                <apex:selectList value="{!projectId}" multiselect="false" size="1" style="width:180px;" >
+                    <apex:selectOptions value="{!projects}"/>
+                    <apex:actionSupport event="onchange" reRender="es" action="{!getEnquirySources}"/>
+                </apex:selectList>
+                <br /><br />
+                <apex:outputLabel >Enquiry Source</apex:outputLabel><br />
+                <apex:selectList size="1" style="width:180px;" value="{!leadSource}" id="es">
+                    <apex:selectOptions value="{!enquiries}"/>
+                </apex:selectList>
+                <br /><br />
+                <apex:outputPanel style="display:block; width:180px; height:40px;">
+                    <apex:actionStatus id="loader">
+                        <apex:facet name="start">
+                            <apex:image value="{!$Resource.homeloader}" style="padding-left:15px;"/>
+                        </apex:facet>
+                        <apex:facet name="stop">
+                            <apex:commandButton value="Create Enquiry!" action="{!createEnquiry}" reRender="container" status="loader" style="margin-left:40px;"/>    
+                        </apex:facet>
+                    </apex:actionStatus>
+                </apex:outputPanel>
+            </apex:actionRegion>
+        </apex:form>
+        <apex:outputPanel id="successPanel">
+            <apex:outputPanel layout="block" style="width:180px; text-align:center; padding-top:10px;" rendered="{!display}">
+                <div class="roundedBox">
+                    <apex:outputPanel rendered="{!success}">
+                        <h1>Enquiry Created!</h1>
+                        <div style="padding-top:5px;">
+                            Project:{!projectName}<br />
+                            Source:{!sourceName}<br />
+                            Time: {!leadTime}<br />
+                            <a href="/{!t.Id}" target="_blank">Click Here</a>
+                        </div>
+                    </apex:outputPanel>
+                    <apex:outputPanel rendered="{!NOT(success)}">
+                        <h1 style="color:#CC0000;">Enquiry Not Created!</h1>
+                        <div style="padding-top:5px;">
+                            Please make sure you have selected a Project &amp; Enquiry Source before creating the enquiry.
+                        </div>
+                    </apex:outputPanel>
+                </div>
+            </apex:outputPanel>
+        </apex:outputPanel>
+    </apex:outputPanel>
+</apex:page>

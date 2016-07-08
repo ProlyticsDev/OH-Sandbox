@@ -1,0 +1,123 @@
+<apex:page controller="transferStatementController" showHeader="false" standardStylesheets="false" applyHtmlTag="false" renderAs="PDF">
+   <head>
+        <style>
+            @page
+            {
+                size: A4;
+                margin: 15mm;
+            }
+            .rightAlign
+            {
+                text-align:right;
+                white-space:nowrap;
+            }
+            #divParent
+            {
+                position:relative;
+                top:120px;
+                width:100%;
+                font-size:13px;
+                display:block;
+                page-break-after:always;
+            }
+            #divHeading
+            {
+                font-size:18px;
+                font-weight:600;
+                font-style:italic;
+                position:relative;
+                top:0px;
+                right:0px;  
+            }
+            #tableJournals td
+            {
+                padding-right:10px;
+            }
+        </style>
+    </head>
+    <apex:repeat id="journalRepeater" value="{!listCustomJournals}" var="objCustomJournal">
+        <div id="divParent" style="{!IF(index == objCustomJournal.index, 'page-break-after:avoid;', '')}">
+            <div id="divHeading" class="rightAlign" >TAX INVOICE/ACCOUNT SALE</div>
+            
+            <div id="divNames">
+                <table>
+                    <tr>
+                        <td>Account name(s)</td>
+                        <td>{!objCustomJournal.objJournal.Bank_Account__r.Account__r.Name}</td>
+                    </tr>
+                    <!--
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td>{!objCustomJournal.objJournal.Trust_Account__r.Name}</td>
+                    </tr>
+                    -->
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td><apex:outputText value="{!objCustomJournal.solicitorAddress}" escape="false" /></td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div id="divDate" style="position:absolute; right:0px; top:30px;">
+                <table>
+                    <tr>
+                        <td>Statement Date:</td>
+                        <td>{!objCustomJournal.todayDate}</td>
+                    </tr>
+                </table>
+            </div>
+            <div id="divJournals" style="width:100%;">
+                <table style="width:100%;" id="tableJournals">
+                    <tr><td colspan="6">&nbsp;</td></tr>
+                    <tr><td colspan="6">&nbsp;</td></tr>
+                    <tr>
+                        <td style="width:8%;">{!objCustomJournal.todayYear}</td>
+                        <td style="width:7%;">Details</td>
+                        <td style="width:49%;">&nbsp;</td>
+                        <td style="width:12%;" class="rightAlign">Debit</td>
+                        <td style="width:12%;" class="rightAlign">Credit</td>
+                        <td style="width:12%;" class="rightAlign">Balance</td>
+                    </tr>
+                    <apex:repeat id="receiptRepeater" value="{!objCustomJournal.listCustomReceipts}" var="objCustomReceipt">
+                        <tr>
+                            <td>{!objCustomJournal.todayMonthDay}</td>
+                            <td>{!objCustomJournal.objJournal.Name}</td>
+                            <td>{!objCustomReceipt.details}</td>
+                            <td class="rightAlign">
+                                <apex:outputText value="${0, number, ###,##0.00}">
+                                    <apex:param value="{!objCustomReceipt.debitAmount}"/>
+                                </apex:outputText>
+                            </td>
+                            <td class="rightAlign">
+                                <apex:outputText value="${0, number, ###,##0.00}">
+                                    <apex:param value="{!objCustomReceipt.creditAmount}"/>
+                                </apex:outputText>
+                            </td>
+                            <td class="rightAlign">
+                                <apex:outputText value="${0, number, ###,##0.00}">
+                                    <apex:param value="{!objCustomReceipt.ledgerBalance}"/>
+                                </apex:outputText>
+                            </td>
+                        </tr>
+                    </apex:repeat>
+                    <tr><td>&nbsp;</td></tr>
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td colspan="2">Totals at end of period</td>
+                        <td class="rightAlign">
+                            <apex:outputText value="${0, number, ###,##0.00}">
+                                <apex:param value="{!objCustomJournal.sumDebits}"/>
+                            </apex:outputText>
+                        </td>
+                        <td class="rightAlign">
+                            <apex:outputText value="${0, number, ###,##0.00}">
+                                <apex:param value="{!objCustomJournal.sumCredits}"/>
+                            </apex:outputText>
+                        </td>
+                        <td class="rightAlign"></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </apex:repeat>
+</apex:page>

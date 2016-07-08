@@ -1,0 +1,227 @@
+<apex:page standardController="Lead" extensions="LeadExcon" tabstyle="Opportunity" title="New Opportunity" showHeader="true">
+    <apex:form id="form">
+        <!-- this page block is for recordType 'Apartments' -->
+        <apex:sectionHeader title="Opportunity Edit" subtitle="New Opportunity"/>
+        <apex:pageBlock title="Opportunity Edit" mode="edit" rendered="{!(recordTypeName=='Apartments')}" tabstyle="Opportunity">
+            <apex:pageMessages />
+            <apex:pageBlockSection title="Opportunity Information" id="leadInfo">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="First Name"></apex:outputLabel>
+                    <apex:outputPanel style="display:inline">
+                         <table style="border-spacing:0">
+                            <tr>
+                               <td>
+                                    <apex:inputField value="{!leadRecord.Salutation}" required="false"/>
+                               </td>
+                               <td>
+                                    <apex:inputText value="{!leadRecord.FirstName}" required="true"/> 
+                               </td>
+                            </tr>
+                        </table>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem helpText="The user who owns this Opportunity">
+                    <apex:outputLabel value="Owner" ></apex:outputLabel>
+                    <apex:outputText value="{!ownerName}" />
+                </apex:pageBlockSectionItem>
+                <apex:inputField value="{!leadRecord.LastName}" required="true"/>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Record Type" ></apex:outputLabel>
+                    <apex:outputText value="{!recordTypeName}" />
+                </apex:pageBlockSectionItem>
+                <apex:inputField value="{!leadRecord.Partner_s_Name__c}"/>
+                    
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockSection title="Contact Details" id="contactDetails" columns="2">
+                <apex:inputField value="{!leadRecord.Email}" />
+                <apex:inputField value="{!leadRecord.Street}" />
+                <apex:inputField value="{!leadRecord.Phone}" />
+                <apex:inputField value="{!leadRecord.Suburb__c}" />
+                <apex:inputField value="{!leadRecord.MobilePhone}" />
+                <apex:inputField value="{!leadRecord.State}" />
+                <apex:pageBlockSectionItem />
+                <apex:inputField value="{!leadRecord.PostalCode}" />
+                <apex:pageBlockSectionItem />
+                <apex:inputField value="{!leadRecord.Country}" />
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockSection title="Enquiry Details" id="enquiryDetails" columns="2">
+                <apex:inputField value="{!leadRecord.Date_of_Enquiry__c}" required="true"/>
+                <apex:inputField value="{!leadRecord.Enquiry_Method__c}" required="true"/>
+                <apex:actionRegion >
+                    <tr>
+                        <th class="labelCol vfLabelColTextWrap " scope="row">
+                            <label><span class="assistiveText">*</span>Project</label>
+                        </th>
+                        <td class="dataCol "><div class="requiredInput"><div class="requiredBlock"></div>
+                            <apex:selectList value="{!project}" id="project" multiselect="false" size="1" required="true" styleClass="projectPicklist" >
+                                <apex:selectOptions value="{!projects}"/>
+                                <apex:actionSupport event="onchange" reRender="es" action="{!getEnquirySources}"/>
+                            </apex:selectList>
+                            </div>
+                        </td>
+                        <th class="labelCol vfLabelColTextWrap " scope="row">
+                            <label><span class="assistiveText">*</span>Enquiry Source</label>
+                        </th>
+                        <td class="dataCol "><div class="requiredInput"><div class="requiredBlock"></div>
+                            <apex:selectList value="{!enquirySource}" multiselect="false" size="1" id="es" styleClass="projectPicklist">
+                                <apex:selectOptions value="{!enquiries}"/>
+                            </apex:selectList>
+                            </div>
+                        </td>    
+                    </tr>
+                </apex:actionRegion>
+                
+                <apex:inputField value="{!leadRecord.Property_Type__c}" required="true"/>
+                    <apex:inputField value="{!leadRecord.Enquiry_Source_Other__c}"/>
+                    
+                <apex:inputField value="{!leadRecord.Family_Friend_Referral__c}"/>
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockSection title="Product Interest" id="productInterest">
+                <apex:inputField value="{!leadRecord.Bdr__c}" />
+                <apex:inputField value="{!leadRecord.Rating__c}" required="true"/>
+                <apex:inputField value="{!leadRecord.Bth__c}" />
+                <apex:inputField value="{!leadRecord.Finance__c}" />
+                <apex:inputField value="{!leadRecord.Study__c}" />
+                <apex:inputField value="{!leadRecord.Purchase_Window__c}" />
+                <apex:inputField value="{!leadRecord.Car__c}" />
+                <apex:inputField value="{!leadRecord.Buyer_Type__c}" />
+                <apex:inputField value="{!leadRecord.Product_Size__c}" />
+                <apex:inputField value="{!leadRecord.Buyer_Experience__c}" />
+                <apex:pageBlockSectionItem />
+                <apex:inputField value="{!leadRecord.Price_Point__c}" />
+                <apex:pageBlockSectionItem />
+                <apex:inputField value="{!leadRecord.Household_Type__c}" />
+                <apex:pageBlockSectionItem />
+                <apex:inputField value="{!leadRecord.FIRB__c}" />
+                <apex:pageBlockSectionItem />
+                <apex:inputField value="{!leadRecord.Resides__c}" />
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockSection title="Comments" id="Comments">
+            <apex:inputField value="{!leadRecord.Comments__c}" style="width:250px"/>
+            </apex:pageBlockSection>
+            
+             <apex:pageBlockSection title="Channel - Agent" id="channelAgent">
+                <apex:inputField value="{!leadRecord.Channel_Account__c}" /> 
+                <apex:inputField value="{!leadRecord.Channel_Contact__c}" /> 
+                <apex:inputField value="{!leadRecord.Property_Connect__c}" />
+            </apex:pageBlockSection>
+            
+            <apex:pageblockButtons >
+                <apex:commandButton value="Save" action="{!saveLead}"/>
+                <apex:commandButton value="Save & New" action="{!saveNew}"/>
+                <apex:commandButton value="Cancel" action="{!cancelLead}" immediate="true"/>
+            </apex:pageblockButtons>    
+        </apex:pageBlock>
+        
+        
+        
+        <!-- this pageBlock is for recordtype other than 'Apartments' -->
+        <apex:pageBlock title="Opportunity Edit" mode="edit" rendered="{!(recordTypeName!='Apartments')}">
+            <apex:pageMessages />
+            <apex:pageBlockSection title="Opportunity Information" id="leadInfo">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="First Name"></apex:outputLabel>
+                    <apex:outputPanel style="display:inline">
+                         <table style="border-spacing:0">
+                            <tr>
+                               <td>
+                                    <apex:inputField value="{!leadRecord.Salutation}" required="false"/>
+                               </td>
+                               <td>
+                                    <apex:inputText value="{!leadRecord.FirstName}" required="true"/> 
+                               </td>
+                            </tr>
+                        </table>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem helpText="The user who owns this Opportunity">
+                    <apex:outputLabel value="Owner" ></apex:outputLabel>
+                    <apex:outputText value="{!ownerName}" />
+                </apex:pageBlockSectionItem>
+                <apex:inputField value="{!leadRecord.LastName}" required="true"/>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Record Type" ></apex:outputLabel>
+                    <apex:outputText value="{!recordTypeName}" />
+                </apex:pageBlockSectionItem>
+                <apex:inputField value="{!leadRecord.Partner_s_Name__c}"/>
+                    
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockSection title="Contact Details" id="contactDetails" columns="2">
+                <apex:inputField value="{!leadRecord.Email}" />
+                <apex:inputField value="{!leadRecord.Street}" />
+                <apex:inputField value="{!leadRecord.Phone}" />
+                <apex:inputField value="{!leadRecord.Suburb__c}" />
+                <apex:inputField value="{!leadRecord.MobilePhone}" />
+                <apex:inputField value="{!leadRecord.State}" />
+                <apex:pageBlockSectionItem />
+                <apex:inputField value="{!leadRecord.PostalCode}" />
+                <apex:pageBlockSectionItem />
+                <apex:inputField value="{!leadRecord.Country}" />
+            </apex:pageBlockSection>
+                                                 
+            <apex:pageBlockSection title="Enquiry Details" id="enquiryDetails">
+                <apex:inputField value="{!leadRecord.Date_of_Enquiry__c}" required="true"/>
+                <apex:inputField value="{!leadRecord.Enquiry_Method__c}" required="true"/>
+
+                <apex:actionRegion >
+                    <tr>
+                        <th class="labelCol vfLabelColTextWrap " scope="row">
+                            <label><span class="assistiveText">*</span>Project</label>
+                        </th>
+                        <td class="dataCol "><div class="requiredInput"><div class="requiredBlock"></div>
+                            <apex:selectList value="{!project}" id="project" multiselect="false" size="1" required="true" styleClass="projectPicklist" >
+                                <apex:selectOptions value="{!projects}"/>
+                                <apex:actionSupport event="onchange" reRender="es2" action="{!getEnquirySources}" />
+                            </apex:selectList></div>
+                        </td>
+                        <th class="labelCol vfLabelColTextWrap " scope="row">
+                            <label><span class="assistiveText">*</span>Enquiry Source</label>
+                        </th>
+                        <td class="dataCol "><div class="requiredInput"><div class="requiredBlock"></div>
+                            <apex:selectList value="{!enquirySource}" multiselect="false" size="1" id="es2" styleClass="projectPicklist">
+                                <apex:selectOptions value="{!enquiries}"/>
+                            </apex:selectList></div>
+                        </td>    
+                    </tr>
+                </apex:actionRegion>
+                
+                <apex:inputField value="{!leadRecord.Property_Type__c}" required="true"/>
+                <apex:inputField value="{!leadRecord.Enquiry_Source_Other__c}"/>
+                <apex:pageBlockSectionItem />
+                <apex:inputField value="{!leadRecord.Referring_Builder_Contact__c}"/>
+                <apex:pageBlockSectionItem />
+                <apex:inputField value="{!leadRecord.Family_Friend_Referral__c}"/>    
+            </apex:pageBlockSection>
+            
+            <apex:pageBlockSection title="Product Interest" id="productInterest">
+                <apex:inputField value="{!leadRecord.Lot_Size__c}" />
+                <apex:inputField value="{!leadRecord.Rating__c}" required="true"/>
+                <apex:inputField value="{!leadRecord.House_Size__c}" />
+                <apex:inputField value="{!leadRecord.Buyer_Type__c}" />
+                <apex:inputField value="{!leadRecord.Frontage__c}" />
+                <apex:inputField value="{!leadRecord.Buyer_Experience__c}" />
+                <apex:inputField value="{!leadRecord.Purchase_Window__c}" />
+                <apex:inputField value="{!leadRecord.Household_Type__c}" />
+                <apex:inputField value="{!leadRecord.Price_Point__c}" />
+                <apex:inputField value="{!leadRecord.Resides__c}" />
+                <apex:inputField value="{!leadRecord.Comments__c}" style="width:250px"/>
+                </apex:pageBlockSection>
+            
+            <apex:pageBlockSection title="System Information" id="systemInfo" columns="1">
+                <apex:inputField value="{!leadRecord.Vendor_CRM_ID__c}"/>
+            </apex:pageBlockSection>
+            
+            <apex:pageblockButtons >
+                <apex:commandButton value="Save" action="{!saveLead}"/>
+                <apex:commandButton value="Save & New" action="{!saveNew}"/>
+                <apex:commandButton value="Cancel" action="{!cancelLead}" immediate="true"/>
+            </apex:pageblockButtons>
+        </apex:pageBlock>
+ 
+    </apex:form>
+</apex:page>

@@ -1,0 +1,19 @@
+{
+    "username": "yohan@prolytics.com.au.fullcopy", 
+    "environment": "sandbox", 
+    "project_name": "OH-Sandbox", 
+    "workspace": "c:/repo/", 
+    "org_url": "", 
+    "namespace": "", 
+    "id": "HUH5M333WPY9O9ONHKMDD28ZY108NN6G", 
+    "metadata_container": "1dcN0000000ZIsQIAW", 
+    "subscription": [
+        "ApexClass", 
+        "ApexComponent", 
+        "ApexPage", 
+        "ApexTrigger", 
+        "CustomObject", 
+        "Profile", 
+        "StaticResource"
+    ]
+}
